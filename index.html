@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Replay</title>
+    <link rel="icon" type="image/x-icon" href="https://www.idn.app/img/logo-idn.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+        body { font-family: "Atkinson Hyperlegible", sans-serif; }
+        .replay-list {
+            min-height: 0; overscroll-behavior: contain; scrollbar-gutter: stable;
+            scrollbar-width: thin; scrollbar-color: rgba(239, 68, 68, 0.72) rgba(255, 255, 255, 0.06);
+        }
+        .visitor-count {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-[#14171a] text-gray-300 flex flex-col min-h-screen font-sans">
+
+    <header class="bg-[#1f2326] border-b border-gray-700 sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          
+            <div class="flex items-center gap-2">
+                <span class="text-red-500 font-bold text-2xl tracking-tighter">IDN</span>
+                <div class="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded leading-none flex items-center">
+                    LIVE
+                </div>
+            </div>
+            
+        
+            <div class="hidden md:block">
+                <h1 class="text-white text-xl font-bold tracking-wide">Arena Replay</h1>
+            </div>
+            
+       
+            <div class="flex items-center gap-2 text-sm">
+                <div class="visitor-count px-3 py-1.5 rounded-2xl flex items-center gap-2">
+                    <i class="fa-solid fa-users text-red-400"></i>
+                    <span class="font-mono font-semibold text-white" id="visitorCount">1,248</span>
+                    <span class="text-gray-400 text-xs">Pengunjung</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="max-w-4xl mx-auto w-full p-4">
+        <div class="bg-[#2c2e31] rounded-3xl flex flex-col overflow-hidden shadow-2xl">
+            <div class="flex border-b border-gray-700">
+                <button class="flex-1 py-4 text-center border-b-2 border-red-600 font-semibold text-lg">
+                    Daftar Replay Ready
+                </button>
+            </div>
+            
+            <div class="p-4 border-b border-gray-700">
+                <input id="searchInput" type="text" placeholder="Cari bulan replay..."
+                       class="w-full bg-[#1f2326] border border-gray-700 rounded-2xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition-colors">
+            </div>
+            
+            <div id="replayList" class="replay-list flex-1 p-4 space-y-3 overflow-auto min-h-[70vh]"></div>
+        </div>
+    </main>
+
+ 
+    <script>
+        const state = { allReplays: [], filteredReplays: [] };
+
+        const elements = {
+            replayList: document.getElementById("replayList"),
+            searchInput: document.getElementById("searchInput"),
+            visitorCount: document.getElementById("visitorCount")
+        };
+
+       
+        function initVisitorCounter() {
+            let count = localStorage.getItem("visitorCount") || 1;
+            count = parseInt(count) + 1;   // Tambah 1 setiap kunjungan
+            
+            localStorage.setItem("visitorCount", count);
+            elements.visitorCount.textContent = count.toLocaleString('id-ID');
+        }
+
+        function openStream(url) {
+            window.open(url, "_blank");
+        }
+
+        function renderReplayList(replays) {
+            elements.replayList.innerHTML = "";
+            if (replays.length === 0) {
+                elements.replayList.innerHTML = `<div class="text-center py-12 text-gray-500"><p>Tidak ada replay ditemukan</p></div>`;
+                return;
+            }
+
+            replays.forEach(replay => {
+                const item = document.createElement("div");
+                item.className = `bg-[#1f2326] border border-gray-700 rounded-xl p-4 cursor-pointer transition-all hover:border-red-500 hover:shadow-lg group`;
+                item.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="flex-1">
+                            <p class="text-white font-semibold text-base group-hover:text-red-400 transition-colors">${replay.judul}</p>
+                            <p class="text-gray-400 text-sm mt-1">${replay.tanggal}</p>
+                        </div>
+                        <div class="text-red-500 text-2xl mt-1 group-hover:translate-x-1 transition-transform">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                `;
+                item.addEventListener("click", () => openStream(replay.url));
+                elements.replayList.appendChild(item);
+            });
+        }
+
+        function init() {
+        
+            state.allReplays = [
+                { id: "1", judul: "Januari 2026", tanggal: "Replay Ready", url: "http://yup48.online/admin/jan26" },
+                { id: "2", judul: "Februari 2026", tanggal: "Replay Ready", url: "http://yup48.online/admin/feb26" },
+                { id: "3", judul: "Maret 2026", tanggal: "Replay Ready", url: "http://yup48.online/admin/mar26" },
+                { id: "4", judul: "April 2026", tanggal: "Replay Ready", url: "http://yup48.online/admin/apr26" },
+                { id: "5", judul: "Mei 2026", tanggal: "Replay Ready", url: "http://yup48.online/admin/mei26" }
+            ];
+
+            state.filteredReplays = [...state.allReplays];
+            renderReplayList(state.filteredReplays);
+
+         
+            elements.searchInput.addEventListener("input", (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                state.filteredReplays = state.allReplays.filter(replay => 
+                    replay.judul.toLowerCase().includes(query) || replay.tanggal.toLowerCase().includes(query)
+                );
+                renderReplayList(state.filteredReplays);
+            });
+
+           
+            initVisitorCounter();
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+    </script>
+</body>
+</html>
