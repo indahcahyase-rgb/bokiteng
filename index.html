@@ -78,7 +78,7 @@
        
         function initVisitorCounter() {
             let count = localStorage.getItem("visitorCount") || 1;
-            count = parseInt(count) + 1;   // Tambah 1 setiap kunjungan
+            count = parseInt(count) + 1;  
             
             localStorage.setItem("visitorCount", count);
             elements.visitorCount.textContent = count.toLocaleString('id-ID');
@@ -117,11 +117,8 @@
         function init() {
         
             state.allReplays = [
-                { id: "1", judul: "Januari 2026", tanggal: "Replay Ready", url: "http://yup48.online/admin/jan26" },
-                { id: "2", judul: "Februari 2026", tanggal: "Replay Ready", url: "http://yup48.online/admin/feb26" },
-                { id: "3", judul: "Maret 2026", tanggal: "Replay Ready", url: "http://yup48.online/admin/mar26" },
-                { id: "4", judul: "April 2026", tanggal: "Replay Ready", url: "http://yup48.online/admin/apr26" },
-                { id: "5", judul: "Mei 2026", tanggal: "Replay Ready", url: "http://yup48.online/admin/mei26" }
+                { id: "1", judul: "April 2026", tanggal: "Replay Ready", url: "arenareplay.my.id/april" },
+                { id: "2", judul: "Mei 2026", tanggal: "Replay Ready", url: "arenareplay.my.id/mei" }
             ];
 
             state.filteredReplays = [...state.allReplays];
