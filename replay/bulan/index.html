@@ -14,7 +14,7 @@
 </head>
 <body class="bg-[#14171a] text-gray-300 flex flex-col min-h-screen">
 
-
+    <!-- Header (lebih ringkas & rapi) -->
     <header class="bg-[#1f2326] border-b border-gray-700 sticky top-0 z-30">
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -23,11 +23,11 @@
                     LIVE
                 </div>
             </div>
-           
+            
             <div class="hidden md:block">
                 <h1 class="text-white text-xl font-bold tracking-wide">Arena Replay</h1>
             </div>
-           
+            
             <div class="flex items-center gap-2 text-sm">
                 <div class="visitor-count px-3 py-1.5 rounded-2xl flex items-center gap-2 bg-red-500/10 border border-red-500/30">
                     <i class="fa-solid fa-users text-red-400"></i>
@@ -38,32 +38,32 @@
         </div>
     </header>
 
-
-    <main class="flex-1 flex items-center justify-center p-6">
-        <div class="max-w-md w-full space-y-8">
+    <!-- Main content: 2 tombol yang lebih kecil, rapi, & responsif -->
+    <main class="flex-1 flex items-center justify-center p-4 md:p-8">
+        <div class="max-w-sm w-full space-y-5">   <!-- max-w-sm = lebih compact di desktop & mobile -->
             
-       
-            <a href="https://arenareplay.my.id" 
+            <!-- Tombol 1: Daftar Replay -->
+            <a href="https://arenareplay.my.id"
                target="_blank"
-               class="block w-full bg-red-600 hover:bg-red-700 active:bg-red-800 transition-all text-white text-center text-3xl font-bold py-8 rounded-3xl shadow-2xl flex items-center justify-center gap-4 hover:scale-105">
-                <i class="fa-solid fa-list-ul text-4xl"></i>
+               class="block w-full bg-red-600 hover:bg-red-700 active:bg-red-800 transition-all text-white text-center text-2xl font-bold py-6 rounded-3xl shadow-xl flex items-center justify-center gap-3 hover:scale-105">
+                <i class="fa-solid fa-list-ul text-3xl"></i>
                 <span>DAFTAR REPLAY</span>
             </a>
 
-       
-            <a href="https://x.com/48replay" 
+            <!-- Tombol 2: Twitter / X -->
+            <a href="https://x.com/48replay"
                target="_blank"
-               class="block w-full bg-[#1f2326] hover:bg-[#2c2e31] border-2 border-gray-600 hover:border-gray-400 transition-all text-white text-center text-3xl font-bold py-8 rounded-3xl shadow-2xl flex items-center justify-center gap-4 hover:scale-105">
-                <i class="fa-brands fa-x-twitter text-4xl"></i>
+               class="block w-full bg-[#1f2326] hover:bg-[#2c2e31] border-2 border-gray-600 hover:border-gray-400 transition-all text-white text-center text-2xl font-bold py-6 rounded-3xl shadow-xl flex items-center justify-center gap-3 hover:scale-105">
+                <i class="fa-brands fa-x-twitter text-3xl"></i>
                 <span>TWITTER / X</span>
-                <span class="text-gray-400 text-2xl">@48replay</span>
+                <span class="text-gray-400 text-xl">@48replay</span>
             </a>
 
         </div>
     </main>
 
     <script>
-        
+        // Visitor counter
         function initVisitorCounter() {
             let count = localStorage.getItem("visitorCount") || 1248;
             count = parseInt(count) + 1;
