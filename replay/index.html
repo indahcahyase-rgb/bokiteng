@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Replay</title>
+    <link rel="icon" type="image/x-icon" href="https://www.idn.app/img/logo-idn.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+        body { font-family: "Atkinson Hyperlegible", sans-serif; }
+    </style>
+</head>
+<body class="bg-[#14171a] text-gray-300 flex flex-col min-h-screen">
+
+
+    <header class="bg-[#1f2326] border-b border-gray-700 sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-red-500 font-bold text-2xl tracking-tighter">IDN</span>
+                <div class="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded leading-none flex items-center">
+                    LIVE
+                </div>
+            </div>
+           
+            <div class="hidden md:block">
+                <h1 class="text-white text-xl font-bold tracking-wide">Arena Replay</h1>
+            </div>
+           
+            <div class="flex items-center gap-2 text-sm">
+                <div class="visitor-count px-3 py-1.5 rounded-2xl flex items-center gap-2 bg-red-500/10 border border-red-500/30">
+                    <i class="fa-solid fa-users text-red-400"></i>
+                    <span class="font-mono font-semibold text-white" id="visitorCount">1,248</span>
+                    <span class="text-gray-400 text-xs">Pengunjung</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+    <main class="flex-1 flex items-center justify-center p-6">
+        <div class="max-w-md w-full space-y-8">
+            
+       
+            <a href="https://arenareplay.my.id" 
+               target="_blank"
+               class="block w-full bg-red-600 hover:bg-red-700 active:bg-red-800 transition-all text-white text-center text-3xl font-bold py-8 rounded-3xl shadow-2xl flex items-center justify-center gap-4 hover:scale-105">
+                <i class="fa-solid fa-list-ul text-4xl"></i>
+                <span>DAFTAR REPLAY</span>
+            </a>
+
+       
+            <a href="https://x.com/48replay" 
+               target="_blank"
+               class="block w-full bg-[#1f2326] hover:bg-[#2c2e31] border-2 border-gray-600 hover:border-gray-400 transition-all text-white text-center text-3xl font-bold py-8 rounded-3xl shadow-2xl flex items-center justify-center gap-4 hover:scale-105">
+                <i class="fa-brands fa-x-twitter text-4xl"></i>
+                <span>TWITTER / X</span>
+                <span class="text-gray-400 text-2xl">@48replay</span>
+            </a>
+
+        </div>
+    </main>
+
+    <script>
+        
+        function initVisitorCounter() {
+            let count = localStorage.getItem("visitorCount") || 1248;
+            count = parseInt(count) + 1;
+            localStorage.setItem("visitorCount", count);
+            const el = document.getElementById("visitorCount");
+            if (el) el.textContent = count.toLocaleString('id-ID');
+        }
+        document.addEventListener("DOMContentLoaded", initVisitorCounter);
+    </script>
+</body>
+</html>
