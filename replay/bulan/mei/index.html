@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
-        body { font-family: "Atkinson Hyperlegible", sans-serif; }
+        body { font-family: "Atkinson Hyperlegible", sans-serif; scroll-behavior: smooth; }
         .replay-list {
             min-height: 0; overscroll-behavior: contain; scrollbar-gutter: stable;
             scrollbar-width: thin; scrollbar-color: rgba(239, 68, 68, 0.72) rgba(255, 255, 255, 0.06);
@@ -18,9 +18,76 @@
             background: rgba(239, 68, 68, 0.15);
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
+
+        /* Scroll Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .replay-item-animated {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        /* Scroll to Top Button */
+        #scrollTopBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 99;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        #scrollTopBtn:hover {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.6);
+            transform: translateY(-3px);
+        }
+
+        #scrollTopBtn.show {
+            display: flex;
+        }
+
+        /* Scroll Progress Bar */
+        #scrollProgress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ef4444, #fca5a5);
+            width: 0%;
+            z-index: 100;
+            transition: width 0.1s ease;
+        }
     </style>
 </head>
 <body class="bg-[#14171a] text-gray-300 flex flex-col min-h-screen font-sans">
+    <!-- Scroll Progress Bar -->
+    <div id="scrollProgress"></div>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollTopBtn" title="Scroll ke atas">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
     <!-- Header -->
     <header class="bg-[#1f2326] border-b border-gray-700 sticky top-0 z-30">
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -211,6 +278,79 @@
         }
 
         document.addEventListener("DOMContentLoaded", init);
+    </script>
+
+    <!-- Scroll Script -->
+    <script>
+        const scrollTopBtn = document.getElementById('scrollTopBtn');
+        const scrollProgress = document.getElementById('scrollProgress');
+
+        // Smooth Scroll to Top
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Show/Hide Scroll Button & Update Progress Bar
+        window.addEventListener('scroll', () => {
+            // Hitung scroll progress
+            const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrolled = window.scrollY;
+            const scrollPercent = (scrolled / windowHeight) * 100;
+            
+            scrollProgress.style.width = scrollPercent + '%';
+
+            // Tampilkan tombol jika scroll lebih dari 300px
+            if (scrolled > 300) {
+                scrollTopBtn.classList.add('show');
+            } else {
+                scrollTopBtn.classList.remove('show');
+            }
+        });
+
+        // Fade-in animation untuk item list saat page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const replayItems = document.querySelectorAll('#replayList div');
+            replayItems.forEach((item, index) => {
+                item.style.animationDelay = (index * 0.1) + 's';
+                item.classList.add('replay-item-animated');
+            });
+        });
+
+        // Observer untuk fade-in animation saat item baru dimunculkan
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('replay-item-animated');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Observe replay items
+        function observeReplayItems() {
+            const replayItems = document.querySelectorAll('#replayList div');
+            replayItems.forEach(item => {
+                observer.observe(item);
+            });
+        }
+
+        // Observer awal
+        observeReplayItems();
+
+        // Update observer setiap kali list di-render
+        const originalRenderReplayList = window.renderReplayList;
+        window.renderReplayList = function(replays) {
+            originalRenderReplayList.call(this, replays);
+            observeReplayItems();
+        };
     </script>
 </body>
 </html>
