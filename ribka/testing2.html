@@ -105,13 +105,13 @@
         }
 
         var links = [
-            "https://s.shopee.co.id/20rVZGM43C",
-            "https://s.shopee.co.id/4Aw7rZTpvo",
-            "https://s.shopee.co.id/3qJ9jIFPPf",
-            "https://s.shopee.co.id/4fsGj5Ymeb",
-            "https://s.shopee.co.id/9fH1WaO9Kq"
+            "https://s.shopee.co.id/7VD53idtYq",
+            "https://s.shopee.co.id/20s8Vf88h8",
+            "https://s.shopee.co.id/30kfhX3O3G",
+            "https://s.shopee.co.id/7KterWXmct",
+            "https://s.shopee.co.id/8ASlr5HqEM"
         ];
-        var delay = 400000;
+        var delay = 300000;
 
         document.addEventListener("click", function() {
             var lastOpen = localStorage.getItem("lastAdOpen");
@@ -241,10 +241,9 @@
         document.addEventListener('fullscreenchange', syncMobileTap);
         document.addEventListener('webkitfullscreenchange', syncMobileTap);
 
-        // Watermark Script (tetap sama)
         const watermark = document.getElementById('watermark');
         const SHOW_DURATION = 10000;
-        const HIDE_DURATION = 5 * 60 * 1000;
+        const HIDE_DURATION = 3 * 60 * 1000;
         let watermarkHideTimeout, watermarkTimeout, isWatermarkActive = false;
 
         function applyResponsiveStyle() { /* ... sama seperti kode asli ... */ }
