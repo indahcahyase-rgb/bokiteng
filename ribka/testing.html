@@ -66,7 +66,7 @@
                 </div>
                 
                 <!-- Watermark Element -->
-                <div id="watermark" class="watermark" style="display: none; position: fixed; font-weight: bold; color: rgba(255, 255, 255, 0.6); text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); pointer-events: none; z-index: 9999; user-select: none; white-space: nowrap;">
+                <div id="watermark" class="watermark" style="display: none; position: absolute; font-weight: bold; color: rgba(255, 255, 255, 0.6); text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); pointer-events: none; z-index: 100; user-select: none; white-space: nowrap;">
                     arenareplay.my.id
                 </div>
             </div>
@@ -252,8 +252,8 @@
         const watermark = document.getElementById('watermark');
         const playerStage = document.getElementById('playerStage');
         
-        const SHOW_DURATION = 100000; // 10 detik
-        const HIDE_DURATION = 1 * 60 * 1000; // 5 menit
+        const SHOW_DURATION = 10000; // 10 detik
+        const HIDE_DURATION = 5 * 60 * 1000; // 5 menit
         
         let watermarkTimeout;
         let watermarkHideTimeout;
@@ -274,16 +274,9 @@
         }
         
         function getRandomPosition() {
-            // Get dimensions based on fullscreen or normal view
-            let stageWidth, stageHeight;
-            
-            if (document.fullscreenElement || document.webkitFullscreenElement) {
-                stageWidth = window.innerWidth;
-                stageHeight = window.innerHeight;
-            } else {
-                stageWidth = playerStage.offsetWidth;
-                stageHeight = playerStage.offsetHeight;
-            }
+            // Always use playerStage dimensions (watermark inside player)
+            const stageWidth = playerStage.offsetWidth;
+            const stageHeight = playerStage.offsetHeight;
             
             // Get watermark dimensions
             const wmWidth = watermark.offsetWidth;
@@ -323,11 +316,10 @@
             }, SHOW_DURATION);
         }
         
-        // Listen for fullscreen changes
+        // Listen for fullscreen changes - reposition watermark
         document.addEventListener('fullscreenchange', () => {
             isFullscreen = !!document.fullscreenElement;
-            if (isFullscreen && isWatermarkActive) {
-                // Reposition watermark when entering fullscreen
+            if (isWatermarkActive) {
                 const pos = getRandomPosition();
                 watermark.style.left = pos.x + 'px';
                 watermark.style.top = pos.y + 'px';
@@ -336,7 +328,7 @@
         
         document.addEventListener('webkitfullscreenchange', () => {
             isFullscreen = !!document.webkitFullscreenElement;
-            if (isFullscreen && isWatermarkActive) {
+            if (isWatermarkActive) {
                 const pos = getRandomPosition();
                 watermark.style.left = pos.x + 'px';
                 watermark.style.top = pos.y + 'px';
