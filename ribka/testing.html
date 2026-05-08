@@ -86,8 +86,6 @@
 
         <div class="mt-5 px-1">
             <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 id="replayTitle" class="text-white text-3xl font-bold"> </h1>
-            <p id="replayDate" class="text-gray-400 text-sm"> </p>
         </div>
 
         <div class="iklan-box">
@@ -215,7 +213,7 @@
 
         function init() {
             state.allReplays      = [
-                { id: "1", judul: " ", tanggal: " ", videoId: "RQi4VWakVQA" }
+                { id: "1", videoId: "RQi4VWakVQA" }
             ];
             state.filteredReplays = [...state.allReplays];
             if (state.allReplays.length > 0) loadReplayIntoPlayer(state.allReplays[0]);
