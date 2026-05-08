@@ -219,47 +219,61 @@
         }
 
         function init() {
-            state.allReplays       = [
+            state.allReplays      = [
                 { id: "1", judul: " ", tanggal: " ", videoId: "ppUaD0PxZmM" }
             ];
-            state.filteredReplays  = [...state.allReplays];
+            state.filteredReplays = [...state.allReplays];
             if (state.allReplays.length > 0) loadReplayIntoPlayer(state.allReplays[0]);
 
-            const player = elements.replayPlayer;
+            const player  = elements.replayPlayer;
+            const overlay = elements.playerOverlay;
+            let overlayRemoved = false;
 
-            // ── FIX 1: Clean play/pause handling — no forcePlay fighting the user.
-            //    The overlay just mirrors the actual paused state; user intent is respected.
+            // Once playback starts, permanently remove the overlay from the DOM.
+            // The overlay is only a "thumbnail / first-play" affordance.
+            // Keeping it in the DOM (even hidden) blocks Vidstack's controls
+            // and causes the red button to flash back on pause/fullscreen events.
+            function removeOverlayPermanently() {
+                if (!overlayRemoved) {
+                    overlayRemoved = true;
+                    overlay.remove();
+                }
+            }
 
             player.addEventListener("play", () => {
                 toggleOverlay(false);
+                setTimeout(removeOverlayPermanently, 300); // after CSS fade completes
             });
 
-            player.addEventListener("pause", () => {
-                toggleOverlay(true);
-            });
+            // Do NOT re-show the overlay on pause/ended — Vidstack's own layout
+            // handles its pause and replay UI natively inside the player.
+            player.addEventListener("ended", () => {});
 
-            player.addEventListener("ended", () => {
-                toggleOverlay(true);
-            });
-
-            // ── FIX 1: Do NOT attach a click handler to playerStage.
-            //
-            // Vidstack's <media-video-layout> already has a built-in
-            // click-to-toggle-play/pause handler on the video area.
-            // Adding our own click listener on playerStage causes a
-            // double-toggle in fullscreen (both fire on the same click),
-            // making the video snap back to its previous state instantly.
-            //
-            // Solution: let Vidstack own all play/pause toggling via its
-            // native controls. Our overlay only handles the very first
-            // "initial play" interaction via the overlayPlayButton.
-
-            // Overlay play button → start playback (hides itself via the
-            // "play" event listener above which calls toggleOverlay(false))
+            // ── Overlay play button ──────────────────────────────────────────
+            // After click: blur() the button before calling play() so it does
+            // NOT retain keyboard focus. A focused <button> inside the fullscreen
+            // element causes browsers to map Spacebar → button activate / fullscreen
+            // exit instead of passing the key to Vidstack's play/pause handler.
             elements.overlayPlayButton.addEventListener("click", (e) => {
                 e.stopPropagation();
+                elements.overlayPlayButton.blur();
                 player.play().catch(() => {});
             });
+
+            // ── Spacebar fix ─────────────────────────────────────────────────
+            // Intercept Space in capture phase (before browser defaults and before
+            // Vidstack). preventDefault() suppresses:
+            //   • Browser activating the focused button (which exits fullscreen).
+            //   • Page scroll.
+            // Then we manually delegate to Vidstack so behaviour is identical in
+            // normal and fullscreen modes.
+            document.addEventListener('keydown', (e) => {
+                if ((e.code === 'Space' || e.key === ' ') && player && player.src) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    player.paused ? player.play().catch(() => {}) : player.pause();
+                }
+            }, true); // true = capture phase
         }
 
         document.addEventListener("DOMContentLoaded", init);
