@@ -97,13 +97,8 @@
 
     <script type="module" src="https://cdn.vidstack.io/player"></script>
 
- 
-    <script>
-        function decodeVideoId() {
-            const encoded = "UlFpNFZXYWtWUUE=";   
-            return atob(encoded);
-        }
 
+    <script>
         var links = [
             "https://s.shopee.co.id/7VD53idtYq",
             "https://s.shopee.co.id/20s8Vf88h8",
@@ -122,6 +117,13 @@
                 localStorage.setItem("lastAdOpen", now);
             }
         });
+    </script>
+    
+    <script>
+        function decodeVideoId() {
+            const encoded = "UlFpNFZXYWtWUUE=";   
+            return atob(encoded);
+        }
 
         if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
             let devToolsOpen = false;
