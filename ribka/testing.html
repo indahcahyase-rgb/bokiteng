@@ -38,31 +38,18 @@
             font-weight: 600;
         }
 
-        /* ── FIX 3: Watermark always rendered inside #playerStage.
-           When the browser fullscreens the <media-player> element,
-           the watermark (which is a sibling inside #playerStage) would
-           normally be clipped. We use a separate fixed-position clone
-           that is only visible during fullscreen. */
-        .watermark-base {
+        /* Watermark: lives inside <media-player> so it is part of the
+           fullscreen subtree. z-index 2147483647 keeps it above all
+           Vidstack UI layers in both normal and fullscreen modes. */
+        #watermark {
             position: absolute;
             font-weight: bold;
             color: rgba(255, 255, 255, 0.6);
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             pointer-events: none;
-            z-index: 2147483647; /* max z-index */
+            z-index: 2147483647;
             user-select: none;
             white-space: nowrap;
-        }
-
-        /* Clone shown only when fullscreen is active */
-        #watermarkFullscreen {
-            display: none;
-            position: fixed; /* stays above the fullscreen layer */
-        }
-
-        :fullscreen #watermarkFullscreen,
-        :-webkit-full-screen #watermarkFullscreen {
-            display: block;
         }
     </style>
 </head>
@@ -84,6 +71,14 @@
                               crossorigin>
                     <media-provider></media-provider>
                     <media-video-layout small-layout-when="never"></media-video-layout>
+                    <!--
+                        Watermark lives INSIDE <media-player> so it is part of the
+                        fullscreen subtree. This is the only reliable way to keep it
+                        visible when the browser fullscreens the player element.
+                    -->
+                    <div id="watermark" style="display:none;">
+                        arenareplay.my.id
+                    </div>
                 </media-player>
                 
                 <div id="playerOverlay" class="player-overlay">
@@ -91,17 +86,7 @@
                         <i class="fa-solid fa-play"></i>
                     </button>
                 </div>
-                
-                <!-- Normal-mode watermark (inside player stage) -->
-                <div id="watermark" class="watermark-base" style="display:none;">
-                    arenareplay.my.id
-                </div>
             </div>
-        </div>
-
-        <!-- Fullscreen-mode watermark clone (fixed position, always above fullscreen layer) -->
-        <div id="watermarkFullscreen" class="watermark-base">
-            arenareplay.my.id
         </div>
 
         <div class="mt-5 px-1">
@@ -257,19 +242,20 @@
                 toggleOverlay(true);
             });
 
-            // Clicking the stage (not the overlay button) toggles play/pause
-            elements.playerStage.addEventListener("click", (e) => {
-                if (e.target.closest("#overlayPlayButton")) return;
-                if (e.target.closest("#playerOverlay")) return; // let overlay button handle itself
+            // ── FIX 1: Do NOT attach a click handler to playerStage.
+            //
+            // Vidstack's <media-video-layout> already has a built-in
+            // click-to-toggle-play/pause handler on the video area.
+            // Adding our own click listener on playerStage causes a
+            // double-toggle in fullscreen (both fire on the same click),
+            // making the video snap back to its previous state instantly.
+            //
+            // Solution: let Vidstack own all play/pause toggling via its
+            // native controls. Our overlay only handles the very first
+            // "initial play" interaction via the overlayPlayButton.
 
-                if (player.paused) {
-                    player.play().catch(() => {});
-                } else {
-                    player.pause();
-                }
-            });
-
-            // Overlay play button → always play
+            // Overlay play button → start playback (hides itself via the
+            // "play" event listener above which calls toggleOverlay(false))
             elements.overlayPlayButton.addEventListener("click", (e) => {
                 e.stopPropagation();
                 player.play().catch(() => {});
@@ -279,20 +265,19 @@
         document.addEventListener("DOMContentLoaded", init);
 
         // ─────────────────────────────────────────────
-        // ── FIX 3: Watermark – visible in fullscreen
-        // Strategy:
-        //   • #watermark        : absolute inside #playerStage → shown in normal mode
-        //   • #watermarkFullscreen : fixed on <body> → shown ONLY during fullscreen
-        //     (CSS :fullscreen selector flips display:none → display:block)
-        //   Both are repositioned together so they always match.
+        // Watermark — single element inside <media-player>
+        //
+        // Because #watermark is a child of <media-player>, it is part of
+        // the browser's fullscreen subtree. No clone needed. The element
+        // is absolutely positioned relative to <media-player> which
+        // naturally fills the screen in fullscreen mode.
         // ─────────────────────────────────────────────
 
-        const watermark      = document.getElementById('watermark');
-        const watermarkFS    = document.getElementById('watermarkFullscreen');
-        const playerStage    = document.getElementById('playerStage');
+        const watermark     = document.getElementById('watermark');
+        const playerEl      = document.getElementById('replayPlayer'); // <media-player>
 
-        const SHOW_DURATION  = 10000;           // 10 seconds visible
-        const HIDE_DURATION  = 1 * 60 * 1000;  // 5 minutes hidden
+        const SHOW_DURATION = 10000;           // 10 seconds visible
+        const HIDE_DURATION = 5 * 60 * 1000;  // 5 minutes hidden
 
         let watermarkHideTimeout;
         let watermarkTimeout;
@@ -304,25 +289,24 @@
         }
 
         function applyResponsiveStyle() {
-            const fs   = isMobileDevice() ? '14px' : '18px';
-            const sh   = isMobileDevice() ? '1px 1px 4px rgba(0,0,0,0.8)' : '2px 2px 4px rgba(0,0,0,0.8)';
-            [watermark, watermarkFS].forEach(el => {
-                el.style.fontSize   = fs;
-                el.style.textShadow = sh;
-            });
+            const fs = isMobileDevice() ? '14px' : '18px';
+            const sh = isMobileDevice() ? '1px 1px 4px rgba(0,0,0,0.8)' : '2px 2px 4px rgba(0,0,0,0.8)';
+            watermark.style.fontSize   = fs;
+            watermark.style.textShadow = sh;
         }
 
-        function getRandomPositionInStage() {
-            const sw = playerStage.offsetWidth  || 640;
-            const sh = playerStage.offsetHeight || 360;
-
-            // Measure from the normal watermark (both have same text/font)
+        function getRandomPosition() {
+            // Use playerEl dimensions — these reflect the true rendered size
+            // in both normal and fullscreen modes because the watermark is
+            // positioned relative to that element.
+            const pw = playerEl.offsetWidth  || 640;
+            const ph = playerEl.offsetHeight || 360;
             const ww = watermark.offsetWidth  || 160;
             const wh = watermark.offsetHeight || 24;
 
             const pad  = 20;
-            const maxX = Math.max(pad, sw - ww - pad);
-            const maxY = Math.max(pad, sh - wh - pad);
+            const maxX = Math.max(pad, pw - ww - pad);
+            const maxY = Math.max(pad, ph - wh - pad);
 
             return {
                 x: pad + Math.random() * (maxX - pad),
@@ -330,18 +314,10 @@
             };
         }
 
-        function positionBothWatermarks() {
-            const pos = getRandomPositionInStage();
-
-            // Normal watermark: absolute inside playerStage
+        function positionWatermark() {
+            const pos = getRandomPosition();
             watermark.style.left = pos.x + 'px';
             watermark.style.top  = pos.y + 'px';
-
-            // Fullscreen watermark: fixed position, needs to account for
-            // the playerStage's bounding rect inside the viewport
-            const rect = playerStage.getBoundingClientRect();
-            watermarkFS.style.left = (rect.left + pos.x) + 'px';
-            watermarkFS.style.top  = (rect.top  + pos.y) + 'px';
         }
 
         function showWatermark() {
@@ -349,25 +325,24 @@
             clearTimeout(watermarkTimeout);
 
             applyResponsiveStyle();
-
-            // Make both visible (CSS :fullscreen controls which one is actually shown)
-            watermark.style.display   = 'block';
-            watermarkFS.style.display = 'block'; // CSS will hide it when not fullscreen
+            watermark.style.display = 'block';
             isWatermarkActive = true;
 
-            positionBothWatermarks();
+            positionWatermark();
 
             watermarkHideTimeout = setTimeout(() => {
-                watermark.style.display   = 'none';
-                watermarkFS.style.display = 'none';
-                isWatermarkActive         = false;
+                watermark.style.display = 'none';
+                isWatermarkActive       = false;
                 watermarkTimeout = setTimeout(showWatermark, HIDE_DURATION);
             }, SHOW_DURATION);
         }
 
-        // Reposition on fullscreen change
+        // Reposition on fullscreen change (dimensions change)
         function onFullscreenChange() {
-            if (isWatermarkActive) positionBothWatermarks();
+            if (isWatermarkActive) {
+                // Slight delay so the browser has finished resizing the element
+                setTimeout(positionWatermark, 100);
+            }
         }
 
         document.addEventListener('fullscreenchange',       onFullscreenChange);
@@ -378,7 +353,7 @@
         window.addEventListener('resize', () => {
             if (isWatermarkActive) {
                 applyResponsiveStyle();
-                positionBothWatermarks();
+                positionWatermark();
             }
         });
 
