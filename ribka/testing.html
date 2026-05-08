@@ -26,7 +26,7 @@
             transition: all 0.2s ease;
         }
         .overlay-play:hover { transform: scale(1.08); background: rgba(220,38,38,0.98); }
-        
+
         .iklan-box {
             background: #2c2e31;
             border: 2px dashed #f97316;
@@ -38,9 +38,21 @@
             font-weight: 600;
         }
 
-        /* Watermark: lives inside <media-player> so it is part of the
-           fullscreen subtree. z-index 2147483647 keeps it above all
-           Vidstack UI layers in both normal and fullscreen modes. */
+        /*
+         * mobileTapTarget hanya menutupi area TENGAH layar (60% x 50%).
+         * Tepi atas, bawah, kiri, kanan tetap bebas sehingga semua tombol
+         * kontrol Vidstack (seekbar, pengaturan, fullscreen, dll.) bisa diklik.
+         */
+        #mobileTapTarget {
+            display: none;
+            position: absolute;
+            left: 20%;
+            top: 25%;
+            width: 60%;
+            height: 50%;
+            z-index: 2147483646;
+        }
+
         #watermark {
             position: absolute;
             font-weight: bold;
@@ -71,13 +83,13 @@
                               crossorigin>
                     <media-provider></media-provider>
                     <media-video-layout small-layout-when="never"></media-video-layout>
-                    <!-- FIX: transparent tap overlay for mobile fullscreen play/pause -->
-                    <div id="mobileTapTarget" style="display:none;position:absolute;inset:0;z-index:2147483646;"></div>
+                    <!-- Tap zone tengah saja: tepi layar tetap bebas untuk kontrol Vidstack -->
+                    <div id="mobileTapTarget"></div>
                     <div id="watermark" style="display:none;">
                         arenareplay.my.id
                     </div>
                 </media-player>
-                
+
                 <div id="playerOverlay" class="player-overlay">
                     <button id="overlayPlayButton" class="overlay-play">
                         <i class="fa-solid fa-play"></i>
@@ -93,16 +105,15 @@
         </div>
 
         <div class="iklan-box">
-    <a href="https://arenareplay.my.id/" target="_blank">
-        <img 
-            src="https://i.ibb.co/7drJNgbR/pasang-iklan-mu-disini.png" 
-            alt="PASANG IKLAN DISINI" 
-            class="w-full h-auto rounded-md"
-            style="width:100%; height:auto; display:block; border-radius:6px;"
-        >
-    </a>
-</div>
-
+            <a href="https://arenareplay.my.id/" target="_blank">
+                <img
+                    src="https://i.ibb.co/7drJNgbR/pasang-iklan-mu-disini.png"
+                    alt="PASANG IKLAN DISINI"
+                    class="w-full h-auto rounded-md"
+                    style="width:100%; height:auto; display:block; border-radius:6px;"
+                >
+            </a>
+        </div>
     </main>
 
     <script type="module" src="https://cdn.vidstack.io/player"></script>
@@ -135,7 +146,6 @@
             function detectDevTools() {
                 const widthDiff = window.outerWidth - window.innerWidth;
                 const heightDiff = window.outerHeight - window.innerHeight;
-
                 if ((widthDiff > 160 || heightDiff > 160) && !devToolsOpen) {
                     devToolsOpen = true;
                     document.body.innerHTML = `
@@ -156,7 +166,6 @@
                     (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
                     (e.ctrlKey && e.key === 'U') || (e.metaKey && e.key === 'U')
                 ];
-
                 if (blocked.some(Boolean)) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
@@ -167,7 +176,6 @@
             document.addEventListener('contextmenu', e => e.preventDefault());
             document.addEventListener('keydown', blockDevToolsKeys, true);
             window.addEventListener('keydown', blockDevToolsKeys, true);
-
             setInterval(detectDevTools, 500);
         }
     </script>
@@ -234,6 +242,7 @@
             });
 
             player.addEventListener("ended", () => {});
+
             elements.overlayPlayButton.addEventListener("click", (e) => {
                 e.stopPropagation();
                 elements.overlayPlayButton.blur();
@@ -251,7 +260,9 @@
 
         document.addEventListener("DOMContentLoaded", init);
 
-        // ── MOBILE FULLSCREEN TAP FIX ────────────────────────────────────────
+        // ── MOBILE FULLSCREEN TAP FIX ─────────────────────────────────────────
+        // Hanya area tengah layar (60% lebar x 50% tinggi) yang intercept touch
+        // untuk play/pause. Area tepi bebas → tombol kontrol Vidstack tetap berfungsi.
         const mobileTap = document.getElementById('mobileTapTarget');
         const replayP   = document.getElementById('replayPlayer');
 
@@ -273,9 +284,9 @@
 
         document.addEventListener('fullscreenchange',       syncMobileTap);
         document.addEventListener('webkitfullscreenchange', syncMobileTap);
-        // ── END MOBILE FULLSCREEN TAP FIX ────────────────────────────────────
+        // ── END MOBILE FULLSCREEN TAP FIX ─────────────────────────────────────
 
-        // ── WATERMARK ────────────────────────────────────────────────────────
+        // ── WATERMARK ─────────────────────────────────────────────────────────
         const watermark = document.getElementById('watermark');
         const playerEl  = document.getElementById('replayPlayer');
 
@@ -303,11 +314,9 @@
             const ph = playerEl.offsetHeight || 360;
             const ww = watermark.offsetWidth  || 160;
             const wh = watermark.offsetHeight || 24;
-
             const pad  = 20;
             const maxX = Math.max(pad, pw - ww - pad);
             const maxY = Math.max(pad, ph - wh - pad);
-
             return {
                 x: pad + Math.random() * (maxX - pad),
                 y: pad + Math.random() * (maxY - pad)
@@ -323,13 +332,10 @@
         function showWatermark() {
             clearTimeout(watermarkHideTimeout);
             clearTimeout(watermarkTimeout);
-
             applyResponsiveStyle();
             watermark.style.display = 'block';
             isWatermarkActive = true;
-
             positionWatermark();
-
             watermarkHideTimeout = setTimeout(() => {
                 watermark.style.display = 'none';
                 isWatermarkActive       = false;
@@ -338,9 +344,7 @@
         }
 
         function onFullscreenChange() {
-            if (isWatermarkActive) {
-                setTimeout(positionWatermark, 100);
-            }
+            if (isWatermarkActive) setTimeout(positionWatermark, 100);
         }
 
         document.addEventListener('fullscreenchange',       onFullscreenChange);
