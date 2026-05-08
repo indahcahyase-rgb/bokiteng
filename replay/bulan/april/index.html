@@ -48,6 +48,35 @@
         .replay-list::-webkit-scrollbar-thumb:hover {
             background: rgba(239, 68, 68, 0.8);
         }
+
+        /* Ensure replay list can scroll properly */
+        #replayList {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            will-change: scroll-position;
+        }
+
+        #replayList::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #replayList::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #replayList::-webkit-scrollbar-thumb {
+            background: rgba(239, 68, 68, 0.5);
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        #replayList::-webkit-scrollbar-thumb:hover {
+            background: rgba(239, 68, 68, 0.7);
+        }
+
         .visitor-count {
             background: rgba(239, 68, 68, 0.15);
             border: 1px solid rgba(239, 68, 68, 0.3);
@@ -149,20 +178,20 @@
         </div>
     </header>
     
-    <main class="max-w-4xl mx-auto w-full p-4">
-        <div class="bg-[#2c2e31] rounded-3xl flex flex-col overflow-hidden shadow-2xl">
-            <div class="flex border-b border-gray-700">
+    <main class="max-w-4xl mx-auto w-full p-4 flex flex-col flex-1">
+        <div class="bg-[#2c2e31] rounded-3xl flex flex-col overflow-hidden shadow-2xl h-[85vh]">
+            <div class="flex border-b border-gray-700 flex-shrink-0">
                 <button class="flex-1 py-4 text-center border-b-2 border-red-600 font-semibold text-lg">
-                    Daftar Replay Tersediaa
+                    Daftar Replay Tersedia
                 </button>
             </div>
             
-            <div class="p-4 border-b border-gray-700">
+            <div class="p-4 border-b border-gray-700 flex-shrink-0">
                 <input id="searchInput" type="text" placeholder="Cari judul replay..."
                        class="w-full bg-[#1f2326] border border-gray-700 rounded-2xl px-4 py-3 focus:outline-none focus:border-red-500">
             </div>
             
-            <div id="replayList" class="replay-list flex-1 p-4 space-y-3 overflow-auto min-h-[70vh]"></div>
+            <div id="replayList" class="replay-list flex-1 p-4 space-y-3 overflow-y-auto overflow-x-hidden"></div>
         </div>
     </main>
 
@@ -328,6 +357,7 @@
             constructor() {
                 this.scrollTopBtn = document.getElementById('scrollTopBtn');
                 this.scrollProgress = document.getElementById('scrollProgress');
+                this.replayList = document.getElementById('replayList');
                 this.isScrolling = false;
                 this.scrollTimeout;
                 this.lastScrollPercent = 0;
@@ -336,38 +366,58 @@
             }
 
             init() {
-                this.setupScrollEvents();
+                this.setupWindowScrollEvents();
+                this.setupReplayListScrollEvents();
                 this.setupIntersectionObserver();
                 this.setupScrollTopButton();
+                this.animateItems();
             }
 
-            setupScrollEvents() {
+            setupWindowScrollEvents() {
                 // Throttle scroll event untuk performa lebih baik
                 let ticking = false;
                 
                 window.addEventListener('scroll', () => {
                     if (!ticking) {
                         window.requestAnimationFrame(() => {
-                            this.handleScroll();
+                            this.handleWindowScroll();
                             ticking = false;
                         });
                         ticking = true;
                     }
                 }, { passive: true });
-
-                // Detect scroll behavior
-                window.addEventListener('scroll', () => {
-                    this.isScrolling = true;
-                    clearTimeout(this.scrollTimeout);
-                    this.scrollTimeout = setTimeout(() => {
-                        this.isScrolling = false;
-                    }, 150);
-                }, { passive: true });
             }
 
-            handleScroll() {
+            setupReplayListScrollEvents() {
+                // Setup scroll untuk elemen replay list sendiri
+                if (this.replayList) {
+                    let ticking = false;
+                    
+                    this.replayList.addEventListener('scroll', () => {
+                        if (!ticking) {
+                            window.requestAnimationFrame(() => {
+                                this.handleListScroll();
+                                ticking = false;
+                            });
+                            ticking = true;
+                        }
+                    }, { passive: true });
+                }
+            }
+
+            handleWindowScroll() {
                 this.updateProgressBar();
                 this.toggleScrollButton();
+            }
+
+            handleListScroll() {
+                // Handle scroll pada replay list (untuk lazy loading di masa depan)
+                const scrolled = this.replayList.scrollTop;
+                const scrollHeight = this.replayList.scrollHeight - this.replayList.clientHeight;
+                const scrollPercent = scrollHeight > 0 ? (scrolled / scrollHeight) * 100 : 0;
+                
+                // Animasi items yang terlihat
+                this.animateVisibleItems();
             }
 
             updateProgressBar() {
@@ -401,8 +451,7 @@
                     e.preventDefault();
                     window.scrollTo({
                         top: 0,
-                        behavior: 'smooth',
-                        block: 'start'
+                        behavior: 'smooth'
                     });
                 });
 
@@ -420,34 +469,40 @@
 
             setupIntersectionObserver() {
                 const observerOptions = {
-                    threshold: 0.05,
-                    rootMargin: '0px 0px -100px 0px'
+                    root: this.replayList,
+                    threshold: 0.1,
+                    rootMargin: '0px'
                 };
 
                 this.observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
-                        if (entry.isIntersecting) {
+                        if (entry.isIntersecting && !entry.target.classList.contains('replay-item-animated')) {
                             entry.target.classList.add('replay-item-animated');
-                            this.observer.unobserve(entry.target);
                         }
                     });
                 }, observerOptions);
             }
 
-            observeElements(selector = '#replayList > div') {
-                // Unobserve semua sebelum observe yang baru
-                const allItems = document.querySelectorAll(selector);
-                allItems.forEach(item => {
+            animateItems() {
+                const replayItems = document.querySelectorAll('#replayList > div');
+                replayItems.forEach((item, index) => {
+                    item.style.animationDelay = (index * 0.06) + 's';
                     if (!item.classList.contains('replay-item-animated')) {
                         this.observer.observe(item);
                     }
                 });
             }
 
-            // Public method untuk merender list dengan scroll optimization
+            animateVisibleItems() {
+                const replayItems = document.querySelectorAll('#replayList > div:not(.replay-item-animated)');
+                replayItems.forEach((item, index) => {
+                    item.style.animationDelay = (index * 0.06) + 's';
+                    this.observer.observe(item);
+                });
+            }
+
             onListRendered() {
-                // Reset scroll observer saat list diperbarui
-                this.observeElements();
+                this.animateItems();
             }
         }
 
@@ -460,26 +515,12 @@
             // Update scroll items saat search input berubah
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
-                const originalOnInput = searchInput.oninput;
                 searchInput.addEventListener('input', function(e) {
-                    if (originalOnInput) {
-                        originalOnInput.call(this, e);
-                    }
-                    // Delay sedikit untuk memastikan DOM sudah updated
                     setTimeout(() => {
                         scrollManager.onListRendered();
-                    }, 100);
+                    }, 50);
                 });
             }
-        });
-
-        // Fallback untuk scroll animations jika ScrollManager belum ready
-        document.addEventListener('DOMContentLoaded', () => {
-            const replayItems = document.querySelectorAll('#replayList > div');
-            replayItems.forEach((item, index) => {
-                item.style.animationDelay = (index * 0.08) + 's';
-                item.classList.add('replay-item-animated');
-            });
         });
 
         // ===== OPTIMASI UNTUK FIREFOX & WEBKIT =====
