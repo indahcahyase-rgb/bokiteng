@@ -66,7 +66,7 @@
                 </div>
                 
                 <!-- Watermark Element -->
-                <div id="watermark" class="watermark" style="display: none; position: absolute; font-weight: bold; color: rgba(255, 255, 255, 0.6); font-size: 18px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); pointer-events: none; z-index: 10; user-select: none;">
+                <div id="watermark" class="watermark" style="display: none; position: fixed; font-weight: bold; color: rgba(255, 255, 255, 0.6); text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); pointer-events: none; z-index: 9999; user-select: none; white-space: nowrap;">
                     arenareplay.my.id
                 </div>
             </div>
@@ -254,15 +254,34 @@
         
         const SHOW_DURATION = 100000; // 10 detik
         const HIDE_DURATION = 1 * 60 * 1000; // 5 menit
-        const CYCLE_DURATION = SHOW_DURATION + HIDE_DURATION; // Total cycle: 5 menit 10 detik
         
         let watermarkTimeout;
+        let isFullscreen = false;
+        
+        // Detect device type and get responsive font size
+        function getResponsiveStyle() {
+            const isMobile = window.innerWidth < 768;
+            const fontSize = isMobile ? '14px' : '18px';
+            const shadowSize = isMobile ? '1px' : '2px';
+            
+            return {
+                fontSize: fontSize,
+                shadowSize: shadowSize,
+                textShadow: `${shadowSize} ${shadowSize} 4px rgba(0, 0, 0, 0.8)`
+            };
+        }
         
         function getRandomPosition() {
-            // Get player stage dimensions
-            const rect = playerStage.getBoundingClientRect();
-            const stageWidth = playerStage.offsetWidth;
-            const stageHeight = playerStage.offsetHeight;
+            // Get dimensions based on fullscreen or normal view
+            let stageWidth, stageHeight;
+            
+            if (isFullscreen || document.fullscreenElement) {
+                stageWidth = window.innerWidth;
+                stageHeight = window.innerHeight;
+            } else {
+                stageWidth = playerStage.offsetWidth;
+                stageHeight = playerStage.offsetHeight;
+            }
             
             // Get watermark dimensions
             const wmWidth = watermark.offsetWidth;
@@ -279,7 +298,14 @@
             return { x: randomX, y: randomY };
         }
         
+        function applyResponsiveStyle() {
+            const style = getResponsiveStyle();
+            watermark.style.fontSize = style.fontSize;
+            watermark.style.textShadow = style.textShadow;
+        }
+        
         function showWatermark() {
+            applyResponsiveStyle();
             const pos = getRandomPosition();
             watermark.style.left = pos.x + 'px';
             watermark.style.top = pos.y + 'px';
@@ -292,6 +318,28 @@
                 watermarkTimeout = setTimeout(showWatermark, HIDE_DURATION);
             }, SHOW_DURATION);
         }
+        
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', () => {
+            isFullscreen = !!document.fullscreenElement;
+            if (isFullscreen && watermark.style.display === 'block') {
+                // Reposition watermark when entering fullscreen
+                const pos = getRandomPosition();
+                watermark.style.left = pos.x + 'px';
+                watermark.style.top = pos.y + 'px';
+            }
+        });
+        
+        document.addEventListener('webkitfullscreenchange', () => {
+            isFullscreen = !!document.webkitFullscreenElement;
+        });
+        
+        // Listen for window resize to update responsive styles
+        window.addEventListener('resize', () => {
+            if (watermark.style.display === 'block') {
+                applyResponsiveStyle();
+            }
+        });
         
         // Start watermark cycle
         watermarkTimeout = setTimeout(showWatermark, HIDE_DURATION);
