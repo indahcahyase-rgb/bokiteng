@@ -71,11 +71,6 @@
                               crossorigin>
                     <media-provider></media-provider>
                     <media-video-layout small-layout-when="never"></media-video-layout>
-                    <!--
-                        Watermark lives INSIDE <media-player> so it is part of the
-                        fullscreen subtree. This is the only reliable way to keep it
-                        visible when the browser fullscreens the player element.
-                    -->
                     <div id="watermark" style="display:none;">
                         arenareplay.my.id
                     </div>
@@ -91,17 +86,19 @@
 
         <div class="mt-5 px-1">
             <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 id="replayTitle" class="text-white text-3xl font-bold">Judul Replay Kamu di Sini</h1>
-            <p id="replayDate" class="text-gray-400 text-sm">29 Maret 2026</p>
+            <h1 id="replayTitle" class="text-white text-3xl font-bold"> </h1>
+            <p id="replayDate" class="text-gray-400 text-sm"> </p>
         </div>
 
         <div class="iklan-box">
-            <p class="text-orange-400 text-lg">❤️ PASANG IKLAN DISINI ❤️</p>
-            <p class="mt-2 text-sm text-gray-300">
-                Kami tidak menerima promosi judi online atau konten 18+<br>
-                Iklan bisa hubungi: +62 XXX-XXX-XXX
-            </p>
-        </div>
+    <a href="https://ibb.co/Q3YFj8XC" target="_blank">
+        <img 
+            src="https://i.ibb.co/Q3YFj8XC/pasang-iklan-mu-disini.jpg" 
+            alt="PASANG IKLAN DISINI" 
+            class="w-full h-auto rounded-md"
+        >
+    </a>
+</div>
 
     </main>
 
@@ -128,7 +125,6 @@
         });
     </script>
 
-    <!-- ── DevTools detection (UNCHANGED logic, only redirect URL updated per requirement) -->
     <script>
         function isMobile() {
             return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
@@ -147,11 +143,10 @@
                     document.body.innerHTML = `
                         <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:white;font-family:system-ui;text-align:center;padding:20px;">
                             <div>
-                                <h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Access Denied</h1>
+                                <h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Mau ngapain?</h1>
                                 <p>Developer tools terdeteksi.</p>
                             </div>
                         </div>`;
-                    // ── FIX 2: Redirect to specified YouTube URL instead of about:blank
                     setTimeout(() => window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY', 800);
                 }
             }
@@ -179,7 +174,6 @@
         }
     </script>
 
-    <!-- ── Main player + watermark logic -->
     <script>
         const state = { allReplays: [], filteredReplays: [], currentReplay: null };
 
@@ -229,10 +223,6 @@
             const overlay = elements.playerOverlay;
             let overlayRemoved = false;
 
-            // Once playback starts, permanently remove the overlay from the DOM.
-            // The overlay is only a "thumbnail / first-play" affordance.
-            // Keeping it in the DOM (even hidden) blocks Vidstack's controls
-            // and causes the red button to flash back on pause/fullscreen events.
             function removeOverlayPermanently() {
                 if (!overlayRemoved) {
                     overlayRemoved = true;
@@ -245,28 +235,13 @@
                 setTimeout(removeOverlayPermanently, 300); // after CSS fade completes
             });
 
-            // Do NOT re-show the overlay on pause/ended — Vidstack's own layout
-            // handles its pause and replay UI natively inside the player.
             player.addEventListener("ended", () => {});
-
-            // ── Overlay play button ──────────────────────────────────────────
-            // After click: blur() the button before calling play() so it does
-            // NOT retain keyboard focus. A focused <button> inside the fullscreen
-            // element causes browsers to map Spacebar → button activate / fullscreen
-            // exit instead of passing the key to Vidstack's play/pause handler.
             elements.overlayPlayButton.addEventListener("click", (e) => {
                 e.stopPropagation();
                 elements.overlayPlayButton.blur();
                 player.play().catch(() => {});
             });
 
-            // ── Spacebar fix ─────────────────────────────────────────────────
-            // Intercept Space in capture phase (before browser defaults and before
-            // Vidstack). preventDefault() suppresses:
-            //   • Browser activating the focused button (which exits fullscreen).
-            //   • Page scroll.
-            // Then we manually delegate to Vidstack so behaviour is identical in
-            // normal and fullscreen modes.
             document.addEventListener('keydown', (e) => {
                 if ((e.code === 'Space' || e.key === ' ') && player && player.src) {
                     e.preventDefault();
@@ -277,15 +252,6 @@
         }
 
         document.addEventListener("DOMContentLoaded", init);
-
-        // ─────────────────────────────────────────────
-        // Watermark — single element inside <media-player>
-        //
-        // Because #watermark is a child of <media-player>, it is part of
-        // the browser's fullscreen subtree. No clone needed. The element
-        // is absolutely positioned relative to <media-player> which
-        // naturally fills the screen in fullscreen mode.
-        // ─────────────────────────────────────────────
 
         const watermark     = document.getElementById('watermark');
         const playerEl      = document.getElementById('replayPlayer'); // <media-player>
@@ -310,9 +276,6 @@
         }
 
         function getRandomPosition() {
-            // Use playerEl dimensions — these reflect the true rendered size
-            // in both normal and fullscreen modes because the watermark is
-            // positioned relative to that element.
             const pw = playerEl.offsetWidth  || 640;
             const ph = playerEl.offsetHeight || 360;
             const ww = watermark.offsetWidth  || 160;
@@ -351,10 +314,8 @@
             }, SHOW_DURATION);
         }
 
-        // Reposition on fullscreen change (dimensions change)
         function onFullscreenChange() {
             if (isWatermarkActive) {
-                // Slight delay so the browser has finished resizing the element
                 setTimeout(positionWatermark, 100);
             }
         }
