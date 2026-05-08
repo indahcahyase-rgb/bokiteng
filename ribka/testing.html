@@ -256,7 +256,9 @@
         const HIDE_DURATION = 1 * 60 * 1000; // 5 menit
         
         let watermarkTimeout;
+        let watermarkHideTimeout;
         let isFullscreen = false;
+        let isWatermarkActive = false;
         
         // Detect device type and get responsive font size
         function getResponsiveStyle() {
@@ -275,7 +277,7 @@
             // Get dimensions based on fullscreen or normal view
             let stageWidth, stageHeight;
             
-            if (isFullscreen || document.fullscreenElement) {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
                 stageWidth = window.innerWidth;
                 stageHeight = window.innerHeight;
             } else {
@@ -310,10 +312,12 @@
             watermark.style.left = pos.x + 'px';
             watermark.style.top = pos.y + 'px';
             watermark.style.display = 'block';
+            isWatermarkActive = true;
             
             // Hide watermark after 10 seconds
-            watermarkTimeout = setTimeout(() => {
+            watermarkHideTimeout = setTimeout(() => {
                 watermark.style.display = 'none';
+                isWatermarkActive = false;
                 // Schedule next show after 5 minutes
                 watermarkTimeout = setTimeout(showWatermark, HIDE_DURATION);
             }, SHOW_DURATION);
@@ -322,7 +326,7 @@
         // Listen for fullscreen changes
         document.addEventListener('fullscreenchange', () => {
             isFullscreen = !!document.fullscreenElement;
-            if (isFullscreen && watermark.style.display === 'block') {
+            if (isFullscreen && isWatermarkActive) {
                 // Reposition watermark when entering fullscreen
                 const pos = getRandomPosition();
                 watermark.style.left = pos.x + 'px';
@@ -332,17 +336,25 @@
         
         document.addEventListener('webkitfullscreenchange', () => {
             isFullscreen = !!document.webkitFullscreenElement;
+            if (isFullscreen && isWatermarkActive) {
+                const pos = getRandomPosition();
+                watermark.style.left = pos.x + 'px';
+                watermark.style.top = pos.y + 'px';
+            }
         });
         
         // Listen for window resize to update responsive styles
         window.addEventListener('resize', () => {
-            if (watermark.style.display === 'block') {
+            if (isWatermarkActive) {
                 applyResponsiveStyle();
+                const pos = getRandomPosition();
+                watermark.style.left = pos.x + 'px';
+                watermark.style.top = pos.y + 'px';
             }
         });
         
-        // Start watermark cycle
-        watermarkTimeout = setTimeout(showWatermark, HIDE_DURATION);
+        // Start watermark cycle immediately (tidak perlu tunggu 5 menit)
+        showWatermark();
     </script>
 </body>
 </html>
