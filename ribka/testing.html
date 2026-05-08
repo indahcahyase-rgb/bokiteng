@@ -37,6 +37,33 @@
             color: #fbbf24;
             font-weight: 600;
         }
+
+        /* ── FIX 3: Watermark always rendered inside #playerStage.
+           When the browser fullscreens the <media-player> element,
+           the watermark (which is a sibling inside #playerStage) would
+           normally be clipped. We use a separate fixed-position clone
+           that is only visible during fullscreen. */
+        .watermark-base {
+            position: absolute;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.6);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            z-index: 2147483647; /* max z-index */
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        /* Clone shown only when fullscreen is active */
+        #watermarkFullscreen {
+            display: none;
+            position: fixed; /* stays above the fullscreen layer */
+        }
+
+        :fullscreen #watermarkFullscreen,
+        :-webkit-full-screen #watermarkFullscreen {
+            display: block;
+        }
     </style>
 </head>
 <body class="bg-[#14171a] text-gray-300 flex flex-col min-h-screen">
@@ -65,11 +92,16 @@
                     </button>
                 </div>
                 
-                <!-- Watermark Element -->
-                <div id="watermark" class="watermark" style="display: none; position: absolute; font-weight: bold; color: rgba(255, 255, 255, 0.6); text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); pointer-events: none; z-index: 100; user-select: none; white-space: nowrap;">
+                <!-- Normal-mode watermark (inside player stage) -->
+                <div id="watermark" class="watermark-base" style="display:none;">
                     arenareplay.my.id
                 </div>
             </div>
+        </div>
+
+        <!-- Fullscreen-mode watermark clone (fixed position, always above fullscreen layer) -->
+        <div id="watermarkFullscreen" class="watermark-base">
+            arenareplay.my.id
         </div>
 
         <div class="mt-5 px-1">
@@ -84,14 +116,13 @@
                 Kami tidak menerima promosi judi online atau konten 18+<br>
                 Iklan bisa hubungi: +62 XXX-XXX-XXX
             </p>
-            
         </div>
 
     </main>
 
     <script type="module" src="https://cdn.vidstack.io/player"></script>
 
-   
+    <!-- Ad redirect on click -->
     <script>
         var links = [
             "https://s.shopee.co.id/20rVZGM43C",
@@ -112,18 +143,16 @@
         });
     </script>
 
-  
+    <!-- ── DevTools detection (UNCHANGED logic, only redirect URL updated per requirement) -->
     <script>
         function isMobile() {
             return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
                    window.innerWidth <= 768;
         }
 
-        
         if (!isMobile()) {
             let devToolsOpen = false;
 
-            
             function detectDevTools() {
                 const widthDiff = window.outerWidth - window.innerWidth;
                 const heightDiff = window.outerHeight - window.innerHeight;
@@ -137,11 +166,11 @@
                                 <p>Developer tools terdeteksi.</p>
                             </div>
                         </div>`;
-                    setTimeout(() => window.location.href = 'about:blank', 800);
+                    // ── FIX 2: Redirect to specified YouTube URL instead of about:blank
+                    setTimeout(() => window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY', 800);
                 }
             }
 
-           
             function blockDevToolsKeys(e) {
                 const blocked = [
                     e.key === 'F12' || e.keyCode === 123,
@@ -157,32 +186,26 @@
                 }
             }
 
-           
             document.addEventListener('contextmenu', e => e.preventDefault());
             document.addEventListener('keydown', blockDevToolsKeys, true);
             window.addEventListener('keydown', blockDevToolsKeys, true);
 
-           
             setInterval(detectDevTools, 500);
         }
     </script>
 
-   
+    <!-- ── Main player + watermark logic -->
     <script>
         const state = { allReplays: [], filteredReplays: [], currentReplay: null };
-        let shouldAutoPlay = true;
-        let isUserPaused = false;
 
         const elements = {
-            replayPlayer: document.getElementById("replayPlayer"),
-            replayList: document.getElementById("replayList"),
-            searchInput: document.getElementById("searchInput"),
-            replayTitle: document.getElementById("replayTitle"),
-            replayDate: document.getElementById("replayDate"),
-            playerStatus: document.getElementById("playerStatus"),
+            replayPlayer:      document.getElementById("replayPlayer"),
+            replayTitle:       document.getElementById("replayTitle"),
+            replayDate:        document.getElementById("replayDate"),
+            playerStatus:      document.getElementById("playerStatus"),
             overlayPlayButton: document.getElementById("overlayPlayButton"),
-            playerOverlay: document.getElementById("playerOverlay"),
-            playerStage: document.getElementById("playerStage")
+            playerOverlay:     document.getElementById("playerOverlay"),
+            playerStage:       document.getElementById("playerStage")
         };
 
         function getYouTubeSrc(videoId) {
@@ -197,155 +220,169 @@
         }
 
         function toggleOverlay(show) {
-            show ? elements.playerOverlay.classList.remove("hidden") : elements.playerOverlay.classList.add("hidden");
-        }
-
-        function forcePlay(player) {
-            if (shouldAutoPlay && !isUserPaused) {
-                setTimeout(() => player.play().catch(() => {}), 100);
-            }
+            show
+                ? elements.playerOverlay.classList.remove("hidden")
+                : elements.playerOverlay.classList.add("hidden");
         }
 
         function loadReplayIntoPlayer(replay) {
             state.currentReplay = replay;
             elements.replayTitle.textContent = replay.judul || "Tanpa Judul";
-            elements.replayDate.textContent = formatDate(replay.tanggal);
-            elements.replayPlayer.src = getYouTubeSrc(replay.videoId);
-            isUserPaused = false;
-            shouldAutoPlay = true;
+            elements.replayDate.textContent   = formatDate(replay.tanggal);
+            elements.replayPlayer.src         = getYouTubeSrc(replay.videoId);
             toggleOverlay(true);
         }
 
         function init() {
-            state.allReplays = [
+            state.allReplays       = [
                 { id: "1", judul: " ", tanggal: " ", videoId: "ppUaD0PxZmM" }
             ];
-            state.filteredReplays = [...state.allReplays];
+            state.filteredReplays  = [...state.allReplays];
             if (state.allReplays.length > 0) loadReplayIntoPlayer(state.allReplays[0]);
 
             const player = elements.replayPlayer;
 
-            player.addEventListener("play", () => { toggleOverlay(false); isUserPaused = false; });
-            player.addEventListener("pause", () => { toggleOverlay(true); if (!isUserPaused) forcePlay(player); });
-            player.addEventListener("ended", () => { toggleOverlay(true); shouldAutoPlay = false; });
-            player.addEventListener("waiting", () => forcePlay(player));
-            player.addEventListener("canplay", () => forcePlay(player));
-            player.addEventListener("seeked", () => forcePlay(player));
+            // ── FIX 1: Clean play/pause handling — no forcePlay fighting the user.
+            //    The overlay just mirrors the actual paused state; user intent is respected.
 
+            player.addEventListener("play", () => {
+                toggleOverlay(false);
+            });
+
+            player.addEventListener("pause", () => {
+                toggleOverlay(true);
+            });
+
+            player.addEventListener("ended", () => {
+                toggleOverlay(true);
+            });
+
+            // Clicking the stage (not the overlay button) toggles play/pause
             elements.playerStage.addEventListener("click", (e) => {
                 if (e.target.closest("#overlayPlayButton")) return;
+                if (e.target.closest("#playerOverlay")) return; // let overlay button handle itself
+
                 if (player.paused) {
-                    isUserPaused = false; shouldAutoPlay = true; player.play().catch(() => {});
+                    player.play().catch(() => {});
                 } else {
-                    isUserPaused = true; shouldAutoPlay = false; player.pause();
+                    player.pause();
                 }
             });
 
-            elements.overlayPlayButton.addEventListener("click", () => {
-                isUserPaused = false; shouldAutoPlay = true; player.play().catch(() => {});
+            // Overlay play button → always play
+            elements.overlayPlayButton.addEventListener("click", (e) => {
+                e.stopPropagation();
+                player.play().catch(() => {});
             });
         }
 
         document.addEventListener("DOMContentLoaded", init);
 
-        // Watermark Logic
-        const watermark = document.getElementById('watermark');
-        const playerStage = document.getElementById('playerStage');
-        
-        const SHOW_DURATION = 10000; // 10 detik
-        const HIDE_DURATION = 5 * 60 * 1000; // 5 menit
-        
-        let watermarkTimeout;
+        // ─────────────────────────────────────────────
+        // ── FIX 3: Watermark – visible in fullscreen
+        // Strategy:
+        //   • #watermark        : absolute inside #playerStage → shown in normal mode
+        //   • #watermarkFullscreen : fixed on <body> → shown ONLY during fullscreen
+        //     (CSS :fullscreen selector flips display:none → display:block)
+        //   Both are repositioned together so they always match.
+        // ─────────────────────────────────────────────
+
+        const watermark      = document.getElementById('watermark');
+        const watermarkFS    = document.getElementById('watermarkFullscreen');
+        const playerStage    = document.getElementById('playerStage');
+
+        const SHOW_DURATION  = 10000;           // 10 seconds visible
+        const HIDE_DURATION  = 1 * 60 * 1000;  // 5 minutes hidden
+
         let watermarkHideTimeout;
-        let isFullscreen = false;
+        let watermarkTimeout;
         let isWatermarkActive = false;
-        
-        // Detect device type and get responsive font size
-        function getResponsiveStyle() {
-            const isMobile = window.innerWidth < 768;
-            const fontSize = isMobile ? '14px' : '18px';
-            const shadowSize = isMobile ? '1px' : '2px';
-            
+
+        function isMobileDevice() {
+            return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   window.innerWidth < 768;
+        }
+
+        function applyResponsiveStyle() {
+            const fs   = isMobileDevice() ? '14px' : '18px';
+            const sh   = isMobileDevice() ? '1px 1px 4px rgba(0,0,0,0.8)' : '2px 2px 4px rgba(0,0,0,0.8)';
+            [watermark, watermarkFS].forEach(el => {
+                el.style.fontSize   = fs;
+                el.style.textShadow = sh;
+            });
+        }
+
+        function getRandomPositionInStage() {
+            const sw = playerStage.offsetWidth  || 640;
+            const sh = playerStage.offsetHeight || 360;
+
+            // Measure from the normal watermark (both have same text/font)
+            const ww = watermark.offsetWidth  || 160;
+            const wh = watermark.offsetHeight || 24;
+
+            const pad  = 20;
+            const maxX = Math.max(pad, sw - ww - pad);
+            const maxY = Math.max(pad, sh - wh - pad);
+
             return {
-                fontSize: fontSize,
-                shadowSize: shadowSize,
-                textShadow: `${shadowSize} ${shadowSize} 4px rgba(0, 0, 0, 0.8)`
+                x: pad + Math.random() * (maxX - pad),
+                y: pad + Math.random() * (maxY - pad)
             };
         }
-        
-        function getRandomPosition() {
-            // Always use playerStage dimensions (watermark inside player)
-            const stageWidth = playerStage.offsetWidth;
-            const stageHeight = playerStage.offsetHeight;
-            
-            // Get watermark dimensions
-            const wmWidth = watermark.offsetWidth;
-            const wmHeight = watermark.offsetHeight;
-            
-            // Calculate random position (with padding from edges)
-            const padding = 20;
-            const maxX = stageWidth - wmWidth - padding;
-            const maxY = stageHeight - wmHeight - padding;
-            
-            const randomX = Math.max(padding, Math.random() * maxX);
-            const randomY = Math.max(padding, Math.random() * maxY);
-            
-            return { x: randomX, y: randomY };
-        }
-        
-        function applyResponsiveStyle() {
-            const style = getResponsiveStyle();
-            watermark.style.fontSize = style.fontSize;
-            watermark.style.textShadow = style.textShadow;
-        }
-        
-        function showWatermark() {
-            applyResponsiveStyle();
-            const pos = getRandomPosition();
+
+        function positionBothWatermarks() {
+            const pos = getRandomPositionInStage();
+
+            // Normal watermark: absolute inside playerStage
             watermark.style.left = pos.x + 'px';
-            watermark.style.top = pos.y + 'px';
-            watermark.style.display = 'block';
+            watermark.style.top  = pos.y + 'px';
+
+            // Fullscreen watermark: fixed position, needs to account for
+            // the playerStage's bounding rect inside the viewport
+            const rect = playerStage.getBoundingClientRect();
+            watermarkFS.style.left = (rect.left + pos.x) + 'px';
+            watermarkFS.style.top  = (rect.top  + pos.y) + 'px';
+        }
+
+        function showWatermark() {
+            clearTimeout(watermarkHideTimeout);
+            clearTimeout(watermarkTimeout);
+
+            applyResponsiveStyle();
+
+            // Make both visible (CSS :fullscreen controls which one is actually shown)
+            watermark.style.display   = 'block';
+            watermarkFS.style.display = 'block'; // CSS will hide it when not fullscreen
             isWatermarkActive = true;
-            
-            // Hide watermark after 10 seconds
+
+            positionBothWatermarks();
+
             watermarkHideTimeout = setTimeout(() => {
-                watermark.style.display = 'none';
-                isWatermarkActive = false;
-                // Schedule next show after 5 minutes
+                watermark.style.display   = 'none';
+                watermarkFS.style.display = 'none';
+                isWatermarkActive         = false;
                 watermarkTimeout = setTimeout(showWatermark, HIDE_DURATION);
             }, SHOW_DURATION);
         }
-        
-        // Listen for fullscreen changes - reposition watermark
-        document.addEventListener('fullscreenchange', () => {
-            isFullscreen = !!document.fullscreenElement;
-            if (isWatermarkActive) {
-                const pos = getRandomPosition();
-                watermark.style.left = pos.x + 'px';
-                watermark.style.top = pos.y + 'px';
-            }
-        });
-        
-        document.addEventListener('webkitfullscreenchange', () => {
-            isFullscreen = !!document.webkitFullscreenElement;
-            if (isWatermarkActive) {
-                const pos = getRandomPosition();
-                watermark.style.left = pos.x + 'px';
-                watermark.style.top = pos.y + 'px';
-            }
-        });
-        
-        // Listen for window resize to update responsive styles
+
+        // Reposition on fullscreen change
+        function onFullscreenChange() {
+            if (isWatermarkActive) positionBothWatermarks();
+        }
+
+        document.addEventListener('fullscreenchange',       onFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+        document.addEventListener('mozfullscreenchange',    onFullscreenChange);
+
+        // Reposition on resize
         window.addEventListener('resize', () => {
             if (isWatermarkActive) {
                 applyResponsiveStyle();
-                const pos = getRandomPosition();
-                watermark.style.left = pos.x + 'px';
-                watermark.style.top = pos.y + 'px';
+                positionBothWatermarks();
             }
         });
-        
-        // Start watermark cycle immediately (tidak perlu tunggu 5 menit)
+
+        // Start watermark cycle immediately
         showWatermark();
     </script>
 </body>
