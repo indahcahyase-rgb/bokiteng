@@ -64,6 +64,11 @@
                         <i class="fa-solid fa-play"></i>
                     </button>
                 </div>
+                
+                <!-- Watermark Element -->
+                <div id="watermark" class="watermark" style="display: none; position: absolute; font-weight: bold; color: rgba(255, 255, 255, 0.6); font-size: 18px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); pointer-events: none; z-index: 10; user-select: none;">
+                    arenareplay.my.id
+                </div>
             </div>
         </div>
 
@@ -95,7 +100,7 @@
             "https://s.shopee.co.id/4fsGj5Ymeb",
             "https://s.shopee.co.id/9fH1WaO9Kq"
         ];
-        var delay = 600000;
+        var delay = 400000;
         document.addEventListener("click", function() {
             var lastOpen = localStorage.getItem("lastAdOpen");
             var now = Date.now();
@@ -213,7 +218,7 @@
 
         function init() {
             state.allReplays = [
-                { id: "1", judul: " ", tanggal: " ", videoId: "SDQEx6BFdsE" }
+                { id: "1", judul: " ", tanggal: " ", videoId: "ppUaD0PxZmM" }
             ];
             state.filteredReplays = [...state.allReplays];
             if (state.allReplays.length > 0) loadReplayIntoPlayer(state.allReplays[0]);
@@ -242,6 +247,54 @@
         }
 
         document.addEventListener("DOMContentLoaded", init);
+
+        // Watermark Logic
+        const watermark = document.getElementById('watermark');
+        const playerStage = document.getElementById('playerStage');
+        
+        const SHOW_DURATION = 10000; // 10 detik
+        const HIDE_DURATION = 5 * 60 * 1000; // 5 menit
+        const CYCLE_DURATION = SHOW_DURATION + HIDE_DURATION; // Total cycle: 5 menit 10 detik
+        
+        let watermarkTimeout;
+        
+        function getRandomPosition() {
+            // Get player stage dimensions
+            const rect = playerStage.getBoundingClientRect();
+            const stageWidth = playerStage.offsetWidth;
+            const stageHeight = playerStage.offsetHeight;
+            
+            // Get watermark dimensions
+            const wmWidth = watermark.offsetWidth;
+            const wmHeight = watermark.offsetHeight;
+            
+            // Calculate random position (with padding from edges)
+            const padding = 20;
+            const maxX = stageWidth - wmWidth - padding;
+            const maxY = stageHeight - wmHeight - padding;
+            
+            const randomX = Math.max(padding, Math.random() * maxX);
+            const randomY = Math.max(padding, Math.random() * maxY);
+            
+            return { x: randomX, y: randomY };
+        }
+        
+        function showWatermark() {
+            const pos = getRandomPosition();
+            watermark.style.left = pos.x + 'px';
+            watermark.style.top = pos.y + 'px';
+            watermark.style.display = 'block';
+            
+            // Hide watermark after 10 seconds
+            watermarkTimeout = setTimeout(() => {
+                watermark.style.display = 'none';
+                // Schedule next show after 5 minutes
+                watermarkTimeout = setTimeout(showWatermark, HIDE_DURATION);
+            }, SHOW_DURATION);
+        }
+        
+        // Start watermark cycle
+        watermarkTimeout = setTimeout(showWatermark, HIDE_DURATION);
     </script>
 </body>
 </html>
