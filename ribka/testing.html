@@ -207,7 +207,7 @@
 
         function loadReplayIntoPlayer(replay) {
             state.currentReplay = replay;
-            elements.replayTitle.textContent = replay.judul || " ";
+            elements.replayTitle.textContent = replay.judul || "ARENA REPLAY";
             elements.replayDate.textContent   = formatDate(replay.tanggal);
             elements.replayPlayer.src         = getYouTubeSrc(replay.videoId);
             toggleOverlay(true);
