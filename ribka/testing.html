@@ -207,7 +207,7 @@
 
         function loadReplayIntoPlayer(replay) {
             state.currentReplay = replay;
-            elements.replayTitle.textContent = replay.judul || "Tanpa Judul";
+            elements.replayTitle.textContent = replay.judul || " ";
             elements.replayDate.textContent   = formatDate(replay.tanggal);
             elements.replayPlayer.src         = getYouTubeSrc(replay.videoId);
             toggleOverlay(true);
