@@ -71,6 +71,8 @@
                               crossorigin>
                     <media-provider></media-provider>
                     <media-video-layout small-layout-when="never"></media-video-layout>
+                    <!-- FIX: transparent tap overlay for mobile fullscreen play/pause -->
+                    <div id="mobileTapTarget" style="display:none;position:absolute;inset:0;z-index:2147483646;"></div>
                     <div id="watermark" style="display:none;">
                         arenareplay.my.id
                     </div>
@@ -127,12 +129,7 @@
     </script>
 
     <script>
-        function isMobile() {
-            return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                   window.innerWidth <= 768;
-        }
-
-        if (!isMobile()) {
+        if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
             let devToolsOpen = false;
 
             function detectDevTools() {
@@ -207,7 +204,7 @@
 
         function loadReplayIntoPlayer(replay) {
             state.currentReplay = replay;
-            elements.replayTitle.textContent = replay.judul || "ARENA REPLAY";
+            elements.replayTitle.textContent = replay.judul || " ";
             elements.replayDate.textContent   = formatDate(replay.tanggal);
             elements.replayPlayer.src         = getYouTubeSrc(replay.videoId);
             toggleOverlay(true);
@@ -233,7 +230,7 @@
 
             player.addEventListener("play", () => {
                 toggleOverlay(false);
-                setTimeout(removeOverlayPermanently, 300); // after CSS fade completes
+                setTimeout(removeOverlayPermanently, 300);
             });
 
             player.addEventListener("ended", () => {});
@@ -249,24 +246,49 @@
                     e.stopImmediatePropagation();
                     player.paused ? player.play().catch(() => {}) : player.pause();
                 }
-            }, true); // true = capture phase
+            }, true);
         }
 
         document.addEventListener("DOMContentLoaded", init);
 
-        const watermark     = document.getElementById('watermark');
-        const playerEl      = document.getElementById('replayPlayer'); // <media-player>
+        // ── MOBILE FULLSCREEN TAP FIX ────────────────────────────────────────
+        const mobileTap = document.getElementById('mobileTapTarget');
+        const replayP   = document.getElementById('replayPlayer');
 
-        const SHOW_DURATION = 10000;           // 10 seconds visible
-        const HIDE_DURATION = 5 * 60 * 1000;  // 5 minutes hidden
+        function isMobileUA() {
+            return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                   || window.innerWidth <= 768;
+        }
+
+        function syncMobileTap() {
+            const inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            mobileTap.style.display = (isMobileUA() && inFs) ? 'block' : 'none';
+        }
+
+        mobileTap.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            replayP.paused ? replayP.play().catch(() => {}) : replayP.pause();
+        }, { passive: false });
+
+        document.addEventListener('fullscreenchange',       syncMobileTap);
+        document.addEventListener('webkitfullscreenchange', syncMobileTap);
+        // ── END MOBILE FULLSCREEN TAP FIX ────────────────────────────────────
+
+        // ── WATERMARK ────────────────────────────────────────────────────────
+        const watermark = document.getElementById('watermark');
+        const playerEl  = document.getElementById('replayPlayer');
+
+        const SHOW_DURATION = 10000;
+        const HIDE_DURATION = 5 * 60 * 1000;
 
         let watermarkHideTimeout;
         let watermarkTimeout;
         let isWatermarkActive = false;
 
         function isMobileDevice() {
-            return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                   window.innerWidth < 768;
+            return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                   || window.innerWidth < 768;
         }
 
         function applyResponsiveStyle() {
@@ -325,7 +347,6 @@
         document.addEventListener('webkitfullscreenchange', onFullscreenChange);
         document.addEventListener('mozfullscreenchange',    onFullscreenChange);
 
-        // Reposition on resize
         window.addEventListener('resize', () => {
             if (isWatermarkActive) {
                 applyResponsiveStyle();
@@ -333,7 +354,6 @@
             }
         });
 
-        // Start watermark cycle immediately
         showWatermark();
     </script>
 </body>
