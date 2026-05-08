@@ -9,10 +9,44 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
-        body { font-family: "Atkinson Hyperlegible", sans-serif; scroll-behavior: smooth; }
+        
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px; /* Header sticky offset */
+        }
+
+        body { 
+            font-family: "Atkinson Hyperlegible", sans-serif;
+            overflow-x: hidden;
+        }
+
         .replay-list {
-            min-height: 0; overscroll-behavior: contain; scrollbar-gutter: stable;
-            scrollbar-width: thin; scrollbar-color: rgba(239, 68, 68, 0.72) rgba(255, 255, 255, 0.06);
+            min-height: 0; 
+            overscroll-behavior: contain; 
+            scrollbar-gutter: stable;
+            scrollbar-width: thin; 
+            scrollbar-color: rgba(239, 68, 68, 0.72) rgba(255, 255, 255, 0.06);
+            scroll-padding: 10px;
+        }
+
+        /* Custom scrollbar untuk Chrome/Edge */
+        .replay-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .replay-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .replay-list::-webkit-scrollbar-thumb {
+            background: rgba(239, 68, 68, 0.6);
+            border-radius: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .replay-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(239, 68, 68, 0.8);
         }
         .visitor-count {
             background: rgba(239, 68, 68, 0.15);
@@ -289,75 +323,176 @@
 
     <!-- Scroll Script -->
     <script>
-        const scrollTopBtn = document.getElementById('scrollTopBtn');
-        const scrollProgress = document.getElementById('scrollProgress');
+        // ===== SCROLL MANAGEMENT =====
+        class ScrollManager {
+            constructor() {
+                this.scrollTopBtn = document.getElementById('scrollTopBtn');
+                this.scrollProgress = document.getElementById('scrollProgress');
+                this.isScrolling = false;
+                this.scrollTimeout;
+                this.lastScrollPercent = 0;
+                this.observer = null;
+                this.init();
+            }
 
-        // Smooth Scroll to Top
-        scrollTopBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
+            init() {
+                this.setupScrollEvents();
+                this.setupIntersectionObserver();
+                this.setupScrollTopButton();
+            }
 
-        // Show/Hide Scroll Button & Update Progress Bar
-        window.addEventListener('scroll', () => {
-            // Hitung scroll progress
-            const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const scrolled = window.scrollY;
-            const scrollPercent = (scrolled / windowHeight) * 100;
-            
-            scrollProgress.style.width = scrollPercent + '%';
+            setupScrollEvents() {
+                // Throttle scroll event untuk performa lebih baik
+                let ticking = false;
+                
+                window.addEventListener('scroll', () => {
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            this.handleScroll();
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                }, { passive: true });
 
-            // Tampilkan tombol jika scroll lebih dari 300px
-            if (scrolled > 300) {
-                scrollTopBtn.classList.add('show');
-            } else {
-                scrollTopBtn.classList.remove('show');
+                // Detect scroll behavior
+                window.addEventListener('scroll', () => {
+                    this.isScrolling = true;
+                    clearTimeout(this.scrollTimeout);
+                    this.scrollTimeout = setTimeout(() => {
+                        this.isScrolling = false;
+                    }, 150);
+                }, { passive: true });
+            }
+
+            handleScroll() {
+                this.updateProgressBar();
+                this.toggleScrollButton();
+            }
+
+            updateProgressBar() {
+                const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrolled = window.scrollY;
+                const scrollPercent = scrollHeight > 0 ? (scrolled / scrollHeight) * 100 : 0;
+                
+                // Hanya update jika ada perubahan signifikan (avoid excessive repaints)
+                if (Math.abs(scrollPercent - this.lastScrollPercent) > 0.5) {
+                    this.scrollProgress.style.width = scrollPercent + '%';
+                    this.lastScrollPercent = scrollPercent;
+                }
+            }
+
+            toggleScrollButton() {
+                const scrolled = window.scrollY;
+                
+                if (scrolled > 300) {
+                    if (!this.scrollTopBtn.classList.contains('show')) {
+                        this.scrollTopBtn.classList.add('show');
+                    }
+                } else {
+                    if (this.scrollTopBtn.classList.contains('show')) {
+                        this.scrollTopBtn.classList.remove('show');
+                    }
+                }
+            }
+
+            setupScrollTopButton() {
+                this.scrollTopBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                });
+
+                // Keyboard shortcut: spacebar + Ctrl untuk scroll ke atas
+                document.addEventListener('keydown', (e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.code === 'Space') {
+                        e.preventDefault();
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            }
+
+            setupIntersectionObserver() {
+                const observerOptions = {
+                    threshold: 0.05,
+                    rootMargin: '0px 0px -100px 0px'
+                };
+
+                this.observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('replay-item-animated');
+                            this.observer.unobserve(entry.target);
+                        }
+                    });
+                }, observerOptions);
+            }
+
+            observeElements(selector = '#replayList > div') {
+                // Unobserve semua sebelum observe yang baru
+                const allItems = document.querySelectorAll(selector);
+                allItems.forEach(item => {
+                    if (!item.classList.contains('replay-item-animated')) {
+                        this.observer.observe(item);
+                    }
+                });
+            }
+
+            // Public method untuk merender list dengan scroll optimization
+            onListRendered() {
+                // Reset scroll observer saat list diperbarui
+                this.observeElements();
+            }
+        }
+
+        // Inisialisasi ScrollManager setelah DOM siap
+        let scrollManager;
+        document.addEventListener('DOMContentLoaded', () => {
+            scrollManager = new ScrollManager();
+            scrollManager.onListRendered();
+
+            // Update scroll items saat search input berubah
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                const originalOnInput = searchInput.oninput;
+                searchInput.addEventListener('input', function(e) {
+                    if (originalOnInput) {
+                        originalOnInput.call(this, e);
+                    }
+                    // Delay sedikit untuk memastikan DOM sudah updated
+                    setTimeout(() => {
+                        scrollManager.onListRendered();
+                    }, 100);
+                });
             }
         });
 
-        // Fade-in animation untuk item list saat page load
+        // Fallback untuk scroll animations jika ScrollManager belum ready
         document.addEventListener('DOMContentLoaded', () => {
-            const replayItems = document.querySelectorAll('#replayList div');
+            const replayItems = document.querySelectorAll('#replayList > div');
             replayItems.forEach((item, index) => {
-                item.style.animationDelay = (index * 0.1) + 's';
+                item.style.animationDelay = (index * 0.08) + 's';
                 item.classList.add('replay-item-animated');
             });
         });
 
-        // Observer untuk fade-in animation saat item baru dimunculkan
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('replay-item-animated');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
-
-        // Observe replay items
-        function observeReplayItems() {
-            const replayItems = document.querySelectorAll('#replayList div');
-            replayItems.forEach(item => {
-                observer.observe(item);
-            });
+        // ===== OPTIMASI UNTUK FIREFOX & WEBKIT =====
+        // Deteksi browser untuk smooth scroll optimization
+        if (typeof CSS !== 'undefined' && CSS.supports('scroll-behavior', 'smooth')) {
+            document.documentElement.style.scrollBehavior = 'smooth';
         }
 
-        // Observer awal
-        observeReplayItems();
-
-        // Update observer setiap kali list di-render
-        const originalRenderReplayList = window.renderReplayList;
-        window.renderReplayList = function(replays) {
-            originalRenderReplayList.call(this, replays);
-            observeReplayItems();
-        };
+        // Optimasi untuk mobile devices
+        if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            document.documentElement.style.scrollBehavior = 'auto';
+            document.body.style.webkitOverflowScrolling = 'touch';
+        }
     </script>
 </body>
 </html>
