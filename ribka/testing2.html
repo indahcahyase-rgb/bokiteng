@@ -99,25 +99,49 @@
 
 
     <script>
-        var links = [
-            "https://s.shopee.co.id/7VD53idtYq",
-            "https://s.shopee.co.id/20s8Vf88h8",
-            "https://s.shopee.co.id/30kfhX3O3G",
-            "https://s.shopee.co.id/7KterWXmct",
-            "https://s.shopee.co.id/8ASlr5HqEM"
-        ];
-        var delay = 300000;
+    var links = [
+        "https://s.shopee.co.id/7VD53idtYq",
+        "https://s.shopee.co.id/20s8Vf88h8",
+        "https://s.shopee.co.id/30kfhX3O3G",
+        "https://s.shopee.co.id/7KterWXmct",
+        "https://s.shopee.co.id/8ASlr5HqEM"
+    ];
+    var delay = 300000; // 5 menit
 
-        document.addEventListener("click", function() {
-            var lastOpen = localStorage.getItem("lastAdOpen");
-            var now = Date.now();
-            if (!lastOpen || now - lastOpen > delay) {
-                var randomLink = links[Math.floor(Math.random() * links.length)];
-                window.open(randomLink, "_blank");
-                localStorage.setItem("lastAdOpen", now);
-            }
+    var excludedSelectors = [
+        '[data-media-button]',
+        '[data-media-slider]',
+        'media-time-slider',
+        'media-volume-slider',
+        'media-play-button',
+        'media-fullscreen-button',
+        'media-mute-button',
+        'media-seek-button',
+        'media-tooltip',
+        '[data-part="controls"]',
+        '[data-controls]'
+    ];
+
+    
+    localStorage.removeItem("lastAdOpen");
+
+    document.addEventListener("click", function(e) {
+        var isExcluded = excludedSelectors.some(function(sel) {
+            return e.target.closest(sel) !== null;
         });
-    </script>
+
+        if (isExcluded) return;
+
+        var lastOpen = localStorage.getItem("lastAdOpen");
+        var now = Date.now();
+
+        if (!lastOpen || (now - parseInt(lastOpen)) > delay) {
+            var randomLink = links[Math.floor(Math.random() * links.length)];
+            window.open(randomLink, "_blank");
+            localStorage.setItem("lastAdOpen", now);
+        }
+    });
+</script>
     
     <script>
         function decodeVideoId() {
