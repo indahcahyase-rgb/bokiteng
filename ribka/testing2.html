@@ -122,23 +122,46 @@
         '[data-controls]'
     ];
 
-    
+    function bukaIklan() {
+        var lastOpen = localStorage.getItem("lastAdOpen");
+        var now = Date.now();
+        if (!lastOpen || (now - parseInt(lastOpen)) > delay) {
+            var randomLink = links[Math.floor(Math.random() * links.length)];
+            window.open(randomLink, "_blank");
+            localStorage.setItem("lastAdOpen", now);
+        }
+    }
+
     localStorage.removeItem("lastAdOpen");
+
 
     document.addEventListener("click", function(e) {
         var isExcluded = excludedSelectors.some(function(sel) {
             return e.target.closest(sel) !== null;
         });
-
         if (isExcluded) return;
+        bukaIklan();
+    });
 
-        var lastOpen = localStorage.getItem("lastAdOpen");
-        var now = Date.now();
 
-        if (!lastOpen || (now - parseInt(lastOpen)) > delay) {
-            var randomLink = links[Math.floor(Math.random() * links.length)];
-            window.open(randomLink, "_blank");
-            localStorage.setItem("lastAdOpen", now);
+    document.addEventListener("DOMContentLoaded", function() {
+        var overlayBtn = document.getElementById("overlayPlayButton");
+        if (overlayBtn) {
+            overlayBtn.addEventListener("click", function() {
+                bukaIklan();
+            });
+        }
+
+
+        var playerStage = document.getElementById("playerStage");
+        if (playerStage) {
+            playerStage.addEventListener("click", function(e) {
+                var isExcluded = excludedSelectors.some(function(sel) {
+                    return e.target.closest(sel) !== null;
+                });
+                if (isExcluded) return;
+                bukaIklan();
+            });
         }
     });
 </script>
