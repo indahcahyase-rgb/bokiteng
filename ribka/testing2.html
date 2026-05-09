@@ -132,9 +132,10 @@
         }
     }
 
+    // Reset delay tiap halaman dibuka
     localStorage.removeItem("lastAdOpen");
 
-
+    // Klik area umum halaman
     document.addEventListener("click", function(e) {
         var isExcluded = excludedSelectors.some(function(sel) {
             return e.target.closest(sel) !== null;
@@ -143,8 +144,9 @@
         bukaIklan();
     });
 
-
     document.addEventListener("DOMContentLoaded", function() {
+
+        // Klik tombol play overlay
         var overlayBtn = document.getElementById("overlayPlayButton");
         if (overlayBtn) {
             overlayBtn.addEventListener("click", function() {
@@ -152,7 +154,7 @@
             });
         }
 
-
+        // Klik area player stage (tap tidak sengaja di video)
         var playerStage = document.getElementById("playerStage");
         if (playerStage) {
             playerStage.addEventListener("click", function(e) {
@@ -163,6 +165,31 @@
                 bukaIklan();
             });
         }
+
+        // Tap di area tengah video saat fullscreen (mobile)
+        var mobileTap = document.getElementById("mobileTapTarget");
+        if (mobileTap) {
+            mobileTap.addEventListener("touchend", function(e) {
+                bukaIklan();
+            }, { passive: true });
+
+            // Klik mouse saat fullscreen desktop
+            mobileTap.addEventListener("click", function(e) {
+                bukaIklan();
+            });
+        }
+
+        // Trigger iklan saat masuk fullscreen
+        function onFullscreenChange() {
+            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (inFs) {
+                bukaIklan();
+            }
+        }
+
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+        document.addEventListener("mozfullscreenchange", onFullscreenChange);
     });
 </script>
     
