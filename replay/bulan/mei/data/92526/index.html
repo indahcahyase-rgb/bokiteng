@@ -188,8 +188,8 @@
 </script>
     
     <script>
-        function decodeVideoId() {
-            const encoded = "YzF1Y3YwMWJ3MEU=";   
+        function decodeStreamId() {
+            const encoded = "V1BqaXJleGphd1k4dXFoejAyMDBqM1BNRHJnVW44TnV3NXZ6ZnJsTEgyUG9R";
             return atob(encoded);
         }
 
@@ -234,9 +234,9 @@
             playerStage: document.getElementById("playerStage")
         };
 
-        function getYouTubeSrc() {
-            const videoId = decodeVideoId();
-            return videoId ? `youtube/${videoId}` : "";
+        function getHlsSrc() {
+            const streamId = decodeStreamId();
+            return streamId ? `https://stream.mux.com/${streamId}.m3u8` : "";
         }
 
         function formatDate() {
@@ -248,12 +248,12 @@
         }
 
         function loadReplayIntoPlayer() {
-            const videoId = decodeVideoId();
-            state.currentReplay = { id: "1", videoId: videoId };
+            const streamId = decodeStreamId();
+            state.currentReplay = { id: "1", streamId: streamId };
             
-            elements.replayTitle.textContent = "Arena Replay";
+            elements.replayTitle.textContent = "Sambil Menggandeng Erat Tanganku - 9 Mei 2026";
             elements.replayDate.textContent = formatDate();
-            elements.replayPlayer.src = getYouTubeSrc();
+            elements.replayPlayer.src = getHlsSrc();
             toggleOverlay(true);
         }
 
