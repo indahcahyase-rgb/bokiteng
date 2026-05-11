@@ -1,268 +1,277 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Arena Replay</title>
-    <link rel="icon" type="image/x-icon" href="https://www.idn.app/img/logo-idn.png" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link rel="stylesheet" href="https://cdn.vidstack.io/player/theme.css" />
-    <link rel="stylesheet" href="https://cdn.vidstack.io/player/video.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
-        body { font-family: "Atkinson Hyperlegible", sans-serif; }
-        .player-stage { position: relative; background: #000; aspect-ratio: 16 / 9; }
-        .player-overlay {
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(180deg, rgba(20,23,26,0.18) 0%, rgba(20,23,26,0.78) 100%);
-            transition: opacity 0.25s ease, visibility 0.25s ease; z-index: 20;
-        }
-        .player-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .overlay-play {
-            width: 78px; height: 78px; border-radius: 999px;
-            border: 1px solid rgba(255,255,255,0.25); background: rgba(239,68,68,0.92);
-            color: #fff; font-size: 1.8rem; box-shadow: 0 24px 50px rgba(0,0,0,0.35);
-            transition: all 0.2s ease;
-        }
-        .overlay-play:hover { transform: scale(1.08); background: rgba(220,38,38,0.98); }
-        .iklan-box {
-            background: #2c2e31;
-            border: 2px dashed #f97316;
-            border-radius: 16px;
-            padding: 16px;
-            margin-top: 20px;
-            text-align: center;
-            color: #fbbf24;
-            font-weight: 600;
-        }
-        #mobileTapTarget {
-            display: none;
-            position: absolute;
-            left: 20%;
-            top: 25%;
-            width: 60%;
-            height: 50%;
-            z-index: 2147483646;
-        }
-        #watermark {
-            position: absolute;
-            font-weight: bold;
-            color: rgba(255, 255, 255, 0.6);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            pointer-events: none;
-            z-index: 2147483647;
-            user-select: none;
-            white-space: nowrap;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Perbaikan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #000000;
+      --text-primary: #ffffff;
+      --text-muted: #888888;
+      --accent: #e8e8e8;
+      --border: rgba(255,255,255,0.08);
+      --glow: rgba(255,255,255,0.04);
+    }
+
+    html, body {
+      min-height: 100%;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    /* Subtle grain texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Faint radial light at center */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(255,255,255,0.035) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: clamp(1.5rem, 6vw, 3rem) clamp(1.2rem, 5vw, 2.5rem);
+      max-width: 580px;
+      width: 100%;
+      animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* Rotating border ring */
+    .icon-ring {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 2.2rem;
+      position: relative;
+    }
+
+    .icon-ring svg {
+      width: 64px;
+      height: 64px;
+      animation: spinSlow 8s linear infinite;
+    }
+
+    .icon-ring .inner-dot {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-ring .inner-dot span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fff;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.8rem, 11vw, 6rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 0.95;
+      color: var(--text-primary);
+      /* Subtle text gradient for depth */
+      background: linear-gradient(170deg, #ffffff 40%, rgba(255,255,255,0.55) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.05em;
+      animation: fadeUp 0.9s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* Italic tagline kecil di bawah judul */
+    .subtitle-tag {
+      display: block;
+      font-family: 'DM Sans', sans-serif;
+      font-size: clamp(0.7rem, 2vw, 0.8rem);
+      font-weight: 300;
+      font-style: italic;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      margin-top: 0.6rem;
+      animation: fadeUp 0.9s 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .divider {
+      width: 32px;
+      height: 1px;
+      background: var(--border);
+      margin: 2rem auto;
+      animation: expandLine 0.8s 0.3s ease both;
+    }
+
+    .info-box {
+      background: var(--glow);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: clamp(1.1rem, 4vw, 1.6rem) clamp(1.2rem, 5vw, 2rem);
+      margin-bottom: 2.2rem;
+      animation: fadeUp 0.9s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .info-box p {
+      font-size: clamp(0.82rem, 2.2vw, 0.93rem);
+      font-weight: 300;
+      color: var(--text-muted);
+      line-height: 1.75;
+    }
+
+    .info-box p strong {
+      color: var(--accent);
+      font-weight: 400;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      font-size: clamp(0.68rem, 1.8vw, 0.78rem);
+      color: #555;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #f0a500;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    .btn-x {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      background: #fff;
+      color: #000;
+      text-decoration: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: clamp(0.82rem, 2.2vw, 0.9rem);
+      font-weight: 400;
+      padding: clamp(0.7rem, 2.5vw, 0.8rem) clamp(1.3rem, 5vw, 1.8rem);
+      border-radius: 100px;
+      letter-spacing: 0.02em;
+      min-height: 44px; /* accessible tap target */
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.9s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .btn-x:hover {
+      background: #e8e8e8;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,255,255,0.08);
+    }
+
+    .btn-x:active {
+      transform: translateY(0);
+      background: #d4d4d4;
+    }
+
+    .btn-x svg {
+      width: 16px;
+      height: 16px;
+      fill: #000;
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes expandLine {
+      from { width: 0; opacity: 0; }
+      to   { width: 32px; opacity: 1; }
+    }
+
+    @keyframes spinSlow {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+  </style>
 </head>
-<body class="bg-[#14171a] text-gray-300 flex flex-col min-h-screen">
-    <header class="bg-[#2c2e31] border-b border-gray-700 sticky top-0 z-30">
-        <div class="flex items-center justify-between gap-3 max-w-7xl mx-auto px-4 py-3">
-            <a href="#"><img src="https://www.idn.app/_next/static/media/logo_light.d99f40cc.svg" alt="IDN Live" class="h-9"></a>
-        </div>
-    </header>
-    <main class="max-w-5xl mx-auto w-full p-4">
-        <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
-            <div class="player-stage" id="playerStage">
-                <media-player id="replayPlayer" class="replay-media-player"
-                              view-type="video"
-                              stream-type="on-demand"
-                              playsinline
-                              crossorigin>
-                    <media-provider></media-provider>
-                    <media-video-layout small-layout-when="never"></media-video-layout>
-                    <div id="mobileTapTarget"></div>
-                    <div id="watermark" style="display:none;">arenareplay.my.id</div>
-                </media-player>
-                <div id="playerOverlay" class="player-overlay">
-                    <button id="overlayPlayButton" class="overlay-play">
-                        <i class="fa-solid fa-play"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="mt-5 px-1">
-            <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 id="replayTitle" class="text-white text-3xl font-bold"></h1>
-            <p id="replayDate" class="text-gray-400 text-sm"></p>
-        </div>
-        <div class="iklan-box">
-            <a href="https://arenareplay.my.id/" target="_blank">
-                <img src="https://i.ibb.co/xSGYwHfv/pasang-iklan-mu-disini-1.png" alt="PASANG IKLAN DISINI" class="w-full h-auto rounded-md">
-            </a>
-        </div>
-    </main>
+<body>
+  <div class="container">
 
-    <script type="module" src="https://cdn.vidstack.io/player"></script>
+    <!-- Icon ring -->
+    <div class="icon-ring">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="32" r="28" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <circle cx="32" cy="32" r="28" stroke="rgba(255,255,255,0.5)" stroke-width="1"
+          stroke-dasharray="20 160" stroke-linecap="round"/>
+      </svg>
+      <div class="inner-dot"><span></span></div>
+    </div>
 
- 
-    <script>
-        function decodeVideoId() {
-            const encoded = "a1BxeWhLbE5jM00=";   
-            return atob(encoded);
-        }
+    <!-- Heading -->
+    <h1>Perbaikan</h1>
+    <span class="subtitle-tag">Maintenance &amp; Update</span>
 
-        var links = [
-            "https://s.shopee.co.id/7VD53idtYq",
-            "https://s.shopee.co.id/20s8Vf88h8",
-            "https://s.shopee.co.id/30kfhX3O3G",
-            "https://s.shopee.co.id/7KterWXmct",
-            "https://s.shopee.co.id/8ASlr5HqEM"
-        ];
-        var delay = 300000;
+    <div class="divider"></div>
 
-        document.addEventListener("click", function() {
-            var lastOpen = localStorage.getItem("lastAdOpen");
-            var now = Date.now();
-            if (!lastOpen || now - lastOpen > delay) {
-                var randomLink = links[Math.floor(Math.random() * links.length)];
-                window.open(randomLink, "_blank");
-                localStorage.setItem("lastAdOpen", now);
-            }
-        });
+    <!-- Info box -->
+    <div class="info-box">
+      <p>
+        Layanan sedang dalam proses <strong>pemeliharaan & perbaikan</strong>.<br/>
+        Kami bekerja untuk memastikan semua sistem kembali berjalan dengan optimal.
+      </p>
+      <p style="margin-top:0.75rem">
+        Mohon bersabar dan pantau terus pembaruan terbaru melalui akun resmi kami.
+      </p>
+      <div class="status-row">
+        <span class="status-dot"></span>
+        Dalam pengerjaan
+      </div>
+    </div>
 
-        if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
-            let devToolsOpen = false;
-            function detectDevTools() {
-                const widthDiff = window.outerWidth - window.innerWidth;
-                const heightDiff = window.outerHeight - window.innerHeight;
-                if ((widthDiff > 160 || heightDiff > 160) && !devToolsOpen) {
-                    devToolsOpen = true;
-                    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:white;font-family:system-ui;text-align:center;padding:20px;"><div><h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Mau ngapain?</h1><p>Developer tools terdeteksi.</p></div></div>`;
-                    setTimeout(() => window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY', 800);
-                }
-            }
-            function blockDevToolsKeys(e) {
-                const blocked = [
-                    e.key === 'F12' || e.keyCode === 123,
-                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
-                    (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
-                    (e.ctrlKey && e.key === 'U') || (e.metaKey && e.key === 'U')
-                ];
-                if (blocked.some(Boolean)) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    return false;
-                }
-            }
-            document.addEventListener('contextmenu', e => e.preventDefault());
-            document.addEventListener('keydown', blockDevToolsKeys, true);
-            window.addEventListener('keydown', blockDevToolsKeys, true);
-            setInterval(detectDevTools, 500);
-        }
+    <!-- Twitter / X button -->
+    <a href="https://x.com/48replay" target="_blank" rel="noopener noreferrer" class="btn-x">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.745l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.91-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+      </svg>
+      Ikuti @48replay di X
+    </a>
 
-        const state = { currentReplay: null };
-        const elements = {
-            replayPlayer: document.getElementById("replayPlayer"),
-            replayTitle: document.getElementById("replayTitle"),
-            replayDate: document.getElementById("replayDate"),
-            playerStatus: document.getElementById("playerStatus"),
-            overlayPlayButton: document.getElementById("overlayPlayButton"),
-            playerOverlay: document.getElementById("playerOverlay"),
-            playerStage: document.getElementById("playerStage")
-        };
-
-        function getYouTubeSrc() {
-            const videoId = decodeVideoId();
-            return videoId ? `youtube/${videoId}` : "";
-        }
-
-        function formatDate() {
-            return "—";
-        }
-
-        function toggleOverlay(show) {
-            show ? elements.playerOverlay.classList.remove("hidden") : elements.playerOverlay.classList.add("hidden");
-        }
-
-        function loadReplayIntoPlayer() {
-            const videoId = decodeVideoId();
-            state.currentReplay = { id: "1", videoId: videoId };
-            
-            elements.replayTitle.textContent = "Arena Replay";
-            elements.replayDate.textContent = formatDate();
-            elements.replayPlayer.src = getYouTubeSrc();
-            toggleOverlay(true);
-        }
-
-        function init() {
-            loadReplayIntoPlayer();
-
-            const player = elements.replayPlayer;
-            const overlay = elements.playerOverlay;
-            let overlayRemoved = false;
-
-            function removeOverlayPermanently() {
-                if (!overlayRemoved) {
-                    overlayRemoved = true;
-                    overlay.remove();
-                }
-            }
-
-            player.addEventListener("play", () => {
-                toggleOverlay(false);
-                setTimeout(removeOverlayPermanently, 300);
-            });
-
-            elements.overlayPlayButton.addEventListener("click", (e) => {
-                e.stopPropagation();
-                player.play().catch(() => {});
-            });
-
-            document.addEventListener('keydown', (e) => {
-                if ((e.code === 'Space' || e.key === ' ') && player && player.src) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    player.paused ? player.play().catch(() => {}) : player.pause();
-                }
-            }, true);
-        }
-
-        document.addEventListener("DOMContentLoaded", init);
-
-        const mobileTap = document.getElementById('mobileTapTarget');
-        const replayP = document.getElementById('replayPlayer');
-        
-        function isMobileUA() {
-            return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-        }
-        function syncMobileTap() {
-            const inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            mobileTap.style.display = (isMobileUA() && inFs) ? 'block' : 'none';
-        }
-        mobileTap.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            replayP.paused ? replayP.play().catch(() => {}) : replayP.pause();
-        }, { passive: false });
-
-        document.addEventListener('fullscreenchange', syncMobileTap);
-        document.addEventListener('webkitfullscreenchange', syncMobileTap);
-
-        const watermark = document.getElementById('watermark');
-        const SHOW_DURATION = 10000;
-        const HIDE_DURATION = 3 * 60 * 1000;
-        let watermarkHideTimeout, watermarkTimeout, isWatermarkActive = false;
-
-        function applyResponsiveStyle() { /* ... sama seperti kode asli ... */ }
-        function getRandomPosition() { /* ... sama ... */ }
-        function positionWatermark() { /* ... sama ... */ }
-        function showWatermark() { /* ... sama ... */ }
-        function onFullscreenChange() { /* ... sama ... */ }
-
-        document.addEventListener('fullscreenchange', onFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-        document.addEventListener('mozfullscreenchange', onFullscreenChange);
-        window.addEventListener('resize', () => {
-            if (isWatermarkActive) {
-                applyResponsiveStyle();
-                positionWatermark();
-            }
-        });
-
-        showWatermark();
-    </script>
+  </div>
 </body>
 </html>
