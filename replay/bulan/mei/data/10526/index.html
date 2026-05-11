@@ -188,8 +188,8 @@
 </script>
     
     <script>
-        function decodeVideoId() {
-            const encoded = "VDVYQjlfN0o1bWM=";   
+        function decodeStreamId() {
+            const encoded = "WUNPZGd4d3BxcEpXcWlvWDNuTHlGSDhMMWN0RzAwZHJtS1IxbmswMFlMRUZJ";
             return atob(encoded);
         }
 
@@ -234,9 +234,9 @@
             playerStage: document.getElementById("playerStage")
         };
 
-        function getYouTubeSrc() {
-            const videoId = decodeVideoId();
-            return videoId ? `youtube/${videoId}` : "";
+        function getHlsSrc() {
+            const streamId = decodeStreamId();
+            return streamId ? `https://stream.mux.com/${streamId}.m3u8` : "";
         }
 
         function formatDate() {
@@ -248,12 +248,13 @@
         }
 
         function loadReplayIntoPlayer() {
-            const videoId = decodeVideoId();
-            state.currentReplay = { id: "1", videoId: videoId };
+            const streamId = decodeStreamId();
+            state.currentReplay = { id: "1", streamId: streamId };
             
             elements.replayTitle.textContent = "Arena Replay";
             elements.replayDate.textContent = formatDate();
-            elements.replayPlayer.src = getYouTubeSrc();
+            // Set src sebagai HLS M3U8 (vidstack mendukung format hls/<url> atau langsung URL .m3u8)
+            elements.replayPlayer.src = getHlsSrc();
             toggleOverlay(true);
         }
 
