@@ -97,31 +97,101 @@
 
     <script type="module" src="https://cdn.vidstack.io/player"></script>
 
- 
+
     <script>
-        function decodeVideoId() {
-            const encoded = "Szc2ZnB3M2RpSjA=";   
-            return atob(encoded);
+    var links = [
+        "https://s.shopee.co.id/9zuR1ePkSi",
+        "https://s.shopee.co.id/1qYjImVxbO",
+        "https://s.shopee.co.id/8piTdhtvyy",
+        "https://s.shopee.co.id/7KtfqzlEXv",
+        "https://s.shopee.co.id/gMlupq6qE"
+    ];
+    var delay = 180000; // 5 menit
+
+    var excludedSelectors = [
+        '[data-media-button]',
+        '[data-media-slider]',
+        'media-time-slider',
+        'media-volume-slider',
+        'media-play-button',
+        'media-fullscreen-button',
+        'media-mute-button',
+        'media-seek-button',
+        'media-tooltip',
+        '[data-part="controls"]',
+        '[data-controls]'
+    ];
+
+    function bukaIklan() {
+        var lastOpen = localStorage.getItem("lastAdOpen");
+        var now = Date.now();
+        if (!lastOpen || (now - parseInt(lastOpen)) > delay) {
+            var randomLink = links[Math.floor(Math.random() * links.length)];
+            window.open(randomLink, "_blank");
+            localStorage.setItem("lastAdOpen", now);
+        }
+    }
+
+    localStorage.removeItem("lastAdOpen");
+
+    document.addEventListener("click", function(e) {
+        var isExcluded = excludedSelectors.some(function(sel) {
+            return e.target.closest(sel) !== null;
+        });
+        if (isExcluded) return;
+        bukaIklan();
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        var overlayBtn = document.getElementById("overlayPlayButton");
+        if (overlayBtn) {
+            overlayBtn.addEventListener("click", function() {
+                bukaIklan();
+            });
         }
 
-        var links = [
-            "https://s.shopee.co.id/7VD53idtYq",
-            "https://s.shopee.co.id/20s8Vf88h8",
-            "https://s.shopee.co.id/30kfhX3O3G",
-            "https://s.shopee.co.id/7KterWXmct",
-            "https://s.shopee.co.id/8ASlr5HqEM"
-        ];
-        var delay = 300000;
+        var playerStage = document.getElementById("playerStage");
+        if (playerStage) {
+            playerStage.addEventListener("click", function(e) {
+                var isExcluded = excludedSelectors.some(function(sel) {
+                    return e.target.closest(sel) !== null;
+                });
+                if (isExcluded) return;
+                bukaIklan();
+            });
+        }
 
-        document.addEventListener("click", function() {
-            var lastOpen = localStorage.getItem("lastAdOpen");
-            var now = Date.now();
-            if (!lastOpen || now - lastOpen > delay) {
-                var randomLink = links[Math.floor(Math.random() * links.length)];
-                window.open(randomLink, "_blank");
-                localStorage.setItem("lastAdOpen", now);
+        var mobileTap = document.getElementById("mobileTapTarget");
+        if (mobileTap) {
+            mobileTap.addEventListener("touchend", function(e) {
+                bukaIklan();
+            }, { passive: true });
+
+            // Klik mouse saat fullscreen desktop
+            mobileTap.addEventListener("click", function(e) {
+                bukaIklan();
+            });
+        }
+
+        function onFullscreenChange() {
+            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (inFs) {
+                bukaIklan();
             }
-        });
+        }
+
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+        document.addEventListener("mozfullscreenchange", onFullscreenChange);
+    });
+</script>
+    
+    <script>
+        function decodeStreamId() {
+            const encoded = "eXY1RzAxdFc1emo4clNuSHJqbmthdEZWZjR5YlF4SkxFMkI4S0lyTFBLdEE=";
+            return atob(encoded);
+        }
 
         if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
             let devToolsOpen = false;
@@ -164,9 +234,9 @@
             playerStage: document.getElementById("playerStage")
         };
 
-        function getYouTubeSrc() {
-            const videoId = decodeVideoId();
-            return videoId ? `youtube/${videoId}` : "";
+        function getHlsSrc() {
+            const streamId = decodeStreamId();
+            return streamId ? `https://stream.mux.com/${streamId}.m3u8` : "";
         }
 
         function formatDate() {
@@ -178,12 +248,12 @@
         }
 
         function loadReplayIntoPlayer() {
-            const videoId = decodeVideoId();
-            state.currentReplay = { id: "1", videoId: videoId };
+            const streamId = decodeStreamId();
+            state.currentReplay = { id: "1", streamId: streamId };
             
-            elements.replayTitle.textContent = "Arena Replay";
+            elements.replayTitle.textContent = "DREAM BAKUDAN - 18 April 2026";
             elements.replayDate.textContent = formatDate();
-            elements.replayPlayer.src = getYouTubeSrc();
+            elements.replayPlayer.src = getHlsSrc();
             toggleOverlay(true);
         }
 
