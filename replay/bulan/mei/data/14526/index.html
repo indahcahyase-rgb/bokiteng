@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Replay</title>
+    <link rel="icon" type="image/x-icon" href="https://www.idn.app/img/logo-idn.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.vidstack.io/player/theme.css" />
+    <link rel="stylesheet" href="https://cdn.vidstack.io/player/video.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+        body { font-family: "Atkinson Hyperlegible", sans-serif; }
+        .player-stage { position: relative; background: #000; aspect-ratio: 16 / 9; }
+        .player-overlay {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(180deg, rgba(20,23,26,0.18) 0%, rgba(20,23,26,0.78) 100%);
+            transition: opacity 0.25s ease, visibility 0.25s ease; z-index: 20;
+        }
+        .player-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .overlay-play {
+            width: 78px; height: 78px; border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.25); background: rgba(239,68,68,0.92);
+            color: #fff; font-size: 1.8rem; box-shadow: 0 24px 50px rgba(0,0,0,0.35);
+            transition: all 0.2s ease;
+        }
+        .overlay-play:hover { transform: scale(1.08); background: rgba(220,38,38,0.98); }
+        .iklan-box {
+            background: #2c2e31;
+            border: 2px dashed #f97316;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 20px;
+            text-align: center;
+            color: #fbbf24;
+            font-weight: 600;
+        }
+        #mobileTapTarget {
+            display: none;
+            position: absolute;
+            left: 20%;
+            top: 25%;
+            width: 60%;
+            height: 50%;
+            z-index: 2147483646;
+        }
+        #watermark {
+            position: absolute;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.6);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            z-index: 2147483647;
+            user-select: none;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="bg-[#14171a] text-gray-300 flex flex-col min-h-screen">
+    <header class="bg-[#2c2e31] border-b border-gray-700 sticky top-0 z-30">
+        <div class="flex items-center justify-between gap-3 max-w-7xl mx-auto px-4 py-3">
+            <a href="#"><img src="https://www.idn.app/_next/static/media/logo_light.d99f40cc.svg" alt="IDN Live" class="h-9"></a>
+        </div>
+    </header>
+    <main class="max-w-5xl mx-auto w-full p-4">
+        <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
+            <div class="player-stage" id="playerStage">
+                <media-player id="replayPlayer" class="replay-media-player"
+                              view-type="video"
+                              stream-type="on-demand"
+                              playsinline
+                              crossorigin>
+                    <media-provider></media-provider>
+                    <media-video-layout small-layout-when="never"></media-video-layout>
+                    <div id="mobileTapTarget"></div>
+                    <div id="watermark" style="display:none;">arenareplay.my.id</div>
+                </media-player>
+                <div id="playerOverlay" class="player-overlay">
+                    <button id="overlayPlayButton" class="overlay-play">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="mt-5 px-1">
+            <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
+            <h1 id="replayTitle" class="text-white text-3xl font-bold"></h1>
+            <p id="replayDate" class="text-gray-400 text-sm"></p>
+        </div>
+        <div class="iklan-box">
+            <a href="https://arenareplay.my.id/" target="_blank">
+                <img src="https://i.ibb.co/xSGYwHfv/pasang-iklan-mu-disini-1.png" alt="PASANG IKLAN DISINI" class="w-full h-auto rounded-md">
+            </a>
+        </div>
+    </main>
+
+    <script type="module" src="https://cdn.vidstack.io/player"></script>
+
+
+    <script>
+    var links = [
+        "https://s.shopee.co.id/9zuR1ePkSi",
+        "https://s.shopee.co.id/1qYjImVxbO",
+        "https://s.shopee.co.id/8piTdhtvyy",
+        "https://s.shopee.co.id/7KtfqzlEXv",
+        "https://s.shopee.co.id/gMlupq6qE"
+    ];
+    var delay = 180000; // 5 menit
+
+    var excludedSelectors = [
+        '[data-media-button]',
+        '[data-media-slider]',
+        'media-time-slider',
+        'media-volume-slider',
+        'media-play-button',
+        'media-fullscreen-button',
+        'media-mute-button',
+        'media-seek-button',
+        'media-tooltip',
+        '[data-part="controls"]',
+        '[data-controls]'
+    ];
+
+    function bukaIklan() {
+        var lastOpen = localStorage.getItem("lastAdOpen");
+        var now = Date.now();
+        if (!lastOpen || (now - parseInt(lastOpen)) > delay) {
+            var randomLink = links[Math.floor(Math.random() * links.length)];
+            window.open(randomLink, "_blank");
+            localStorage.setItem("lastAdOpen", now);
+        }
+    }
+
+    localStorage.removeItem("lastAdOpen");
+
+    document.addEventListener("click", function(e) {
+        var isExcluded = excludedSelectors.some(function(sel) {
+            return e.target.closest(sel) !== null;
+        });
+        if (isExcluded) return;
+        bukaIklan();
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        var overlayBtn = document.getElementById("overlayPlayButton");
+        if (overlayBtn) {
+            overlayBtn.addEventListener("click", function() {
+                bukaIklan();
+            });
+        }
+
+        var playerStage = document.getElementById("playerStage");
+        if (playerStage) {
+            playerStage.addEventListener("click", function(e) {
+                var isExcluded = excludedSelectors.some(function(sel) {
+                    return e.target.closest(sel) !== null;
+                });
+                if (isExcluded) return;
+                bukaIklan();
+            });
+        }
+
+        var mobileTap = document.getElementById("mobileTapTarget");
+        if (mobileTap) {
+            mobileTap.addEventListener("touchend", function(e) {
+                bukaIklan();
+            }, { passive: true });
+
+            // Klik mouse saat fullscreen desktop
+            mobileTap.addEventListener("click", function(e) {
+                bukaIklan();
+            });
+        }
+
+        function onFullscreenChange() {
+            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (inFs) {
+                bukaIklan();
+            }
+        }
+
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+        document.addEventListener("mozfullscreenchange", onFullscreenChange);
+    });
+</script>
+    
+    <script>
+        function decodeStreamId() {
+            const encoded = "UTAwTExiQzhyRXBWRXF0aGd3ZmpkMVZvRzNZUVJxUEJoZGRKVFpDdjAydDRNCg==";
+            return atob(encoded);
+        }
+
+        if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
+            let devToolsOpen = false;
+            function detectDevTools() {
+                const widthDiff = window.outerWidth - window.innerWidth;
+                const heightDiff = window.outerHeight - window.innerHeight;
+                if ((widthDiff > 160 || heightDiff > 160) && !devToolsOpen) {
+                    devToolsOpen = true;
+                    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:white;font-family:system-ui;text-align:center;padding:20px;"><div><h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Mau ngapain?</h1><p>Developer tools terdeteksi.</p></div></div>`;
+                    setTimeout(() => window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY', 800);
+                }
+            }
+            function blockDevToolsKeys(e) {
+                const blocked = [
+                    e.key === 'F12' || e.keyCode === 123,
+                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
+                    (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
+                    (e.ctrlKey && e.key === 'U') || (e.metaKey && e.key === 'U')
+                ];
+                if (blocked.some(Boolean)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    return false;
+                }
+            }
+            document.addEventListener('contextmenu', e => e.preventDefault());
+            document.addEventListener('keydown', blockDevToolsKeys, true);
+            window.addEventListener('keydown', blockDevToolsKeys, true);
+            setInterval(detectDevTools, 500);
+        }
+
+        const state = { currentReplay: null };
+        const elements = {
+            replayPlayer: document.getElementById("replayPlayer"),
+            replayTitle: document.getElementById("replayTitle"),
+            replayDate: document.getElementById("replayDate"),
+            playerStatus: document.getElementById("playerStatus"),
+            overlayPlayButton: document.getElementById("overlayPlayButton"),
+            playerOverlay: document.getElementById("playerOverlay"),
+            playerStage: document.getElementById("playerStage")
+        };
+
+        function getHlsSrc() {
+            const streamId = decodeStreamId();
+            return streamId ? `https://stream.mux.com/${streamId}.m3u8` : "";
+        }
+
+        function formatDate() {
+            return "—";
+        }
+
+        function toggleOverlay(show) {
+            show ? elements.playerOverlay.classList.remove("hidden") : elements.playerOverlay.classList.add("hidden");
+        }
+
+        function loadReplayIntoPlayer() {
+            const streamId = decodeStreamId();
+            state.currentReplay = { id: "1", streamId: streamId };
+            
+            elements.replayTitle.textContent = "Itadaki Love - 14 Mei 2026";
+            elements.replayDate.textContent = formatDate();
+            elements.replayPlayer.src = getHlsSrc();
+            toggleOverlay(true);
+        }
+
+        function init() {
+            loadReplayIntoPlayer();
+
+            const player = elements.replayPlayer;
+            const overlay = elements.playerOverlay;
+            let overlayRemoved = false;
+
+            function removeOverlayPermanently() {
+                if (!overlayRemoved) {
+                    overlayRemoved = true;
+                    overlay.remove();
+                }
+            }
+
+            player.addEventListener("play", () => {
+                toggleOverlay(false);
+                setTimeout(removeOverlayPermanently, 300);
+            });
+
+            elements.overlayPlayButton.addEventListener("click", (e) => {
+                e.stopPropagation();
+                player.play().catch(() => {});
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if ((e.code === 'Space' || e.key === ' ') && player && player.src) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    player.paused ? player.play().catch(() => {}) : player.pause();
+                }
+            }, true);
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+
+        const mobileTap = document.getElementById('mobileTapTarget');
+        const replayP = document.getElementById('replayPlayer');
+        
+        function isMobileUA() {
+            return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        }
+        function syncMobileTap() {
+            const inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            mobileTap.style.display = (isMobileUA() && inFs) ? 'block' : 'none';
+        }
+        mobileTap.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            replayP.paused ? replayP.play().catch(() => {}) : replayP.pause();
+        }, { passive: false });
+
+        document.addEventListener('fullscreenchange', syncMobileTap);
+        document.addEventListener('webkitfullscreenchange', syncMobileTap);
+
+        const watermark = document.getElementById('watermark');
+        const SHOW_DURATION = 10000;
+        const HIDE_DURATION = 3 * 60 * 1000;
+        let watermarkHideTimeout, watermarkTimeout, isWatermarkActive = false;
+
+        function applyResponsiveStyle() { /* ... sama seperti kode asli ... */ }
+        function getRandomPosition() { /* ... sama ... */ }
+        function positionWatermark() { /* ... sama ... */ }
+        function showWatermark() { /* ... sama ... */ }
+        function onFullscreenChange() { /* ... sama ... */ }
+
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+        document.addEventListener('mozfullscreenchange', onFullscreenChange);
+        window.addEventListener('resize', () => {
+            if (isWatermarkActive) {
+                applyResponsiveStyle();
+                positionWatermark();
+            }
+        });
+
+        showWatermark();
+    </script>
+</body>
+</html>
