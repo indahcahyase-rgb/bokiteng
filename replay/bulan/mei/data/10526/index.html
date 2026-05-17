@@ -6,8 +6,6 @@
     <title>Arena Replay</title>
     <link rel="icon" type="image/x-icon" href="https://www.idn.app/img/logo-idn.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link rel="stylesheet" href="https://cdn.vidstack.io/player/theme.css" />
-    <link rel="stylesheet" href="https://cdn.vidstack.io/player/video.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
@@ -36,24 +34,13 @@
             color: #fbbf24;
             font-weight: 600;
         }
-        #mobileTapTarget {
+        #sproutFrame {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+            border: none;
             display: none;
-            position: absolute;
-            left: 20%;
-            top: 25%;
-            width: 60%;
-            height: 50%;
-            z-index: 2147483646;
-        }
-        #watermark {
-            position: absolute;
-            font-weight: bold;
-            color: rgba(255, 255, 255, 0.6);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            pointer-events: none;
-            z-index: 2147483647;
-            user-select: none;
-            white-space: nowrap;
         }
     </style>
 </head>
@@ -66,16 +53,12 @@
     <main class="max-w-5xl mx-auto w-full p-4">
         <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
             <div class="player-stage" id="playerStage">
-                <media-player id="replayPlayer" class="replay-media-player"
-                              view-type="video"
-                              stream-type="on-demand"
-                              playsinline
-                              crossorigin>
-                    <media-provider></media-provider>
-                    <media-video-layout small-layout-when="never"></media-video-layout>
-                    <div id="mobileTapTarget"></div>
-                    <div id="watermark" style="display:none;">arenareplay.my.id</div>
-                </media-player>
+                <!-- Sproutvideo iframe, ditampilkan setelah overlay diklik -->
+                <iframe
+                    id="sproutFrame"
+                    allowfullscreen
+                    allow="autoplay; fullscreen"
+                ></iframe>
                 <div id="playerOverlay" class="player-overlay">
                     <button id="overlayPlayButton" class="overlay-play">
                         <i class="fa-solid fa-play"></i>
@@ -85,8 +68,8 @@
         </div>
         <div class="mt-5 px-1">
             <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 id="replayTitle" class="text-white text-3xl font-bold"></h1>
-            <p id="replayDate" class="text-gray-400 text-sm"></p>
+            <h1 id="replayTitle" class="text-white text-3xl font-bold">Dream Bakudan</h1>
+            <p id="replayDate" class="text-gray-400 text-sm">10 Mei 2026</p>
         </div>
         <div class="iklan-box">
             <a href="https://arenareplay.my.id/" target="_blank">
@@ -94,9 +77,6 @@
             </a>
         </div>
     </main>
-
-    <script type="module" src="https://cdn.vidstack.io/player"></script>
-
 
     <script>
     var links = [
@@ -106,7 +86,7 @@
         "https://s.shopee.co.id/7KtfqzlEXv",
         "https://s.shopee.co.id/gMlupq6qE"
     ];
-    var delay = 180000; // 5 menit
+    var delay = 180000;
 
     var excludedSelectors = [
         '[data-media-button]',
@@ -142,197 +122,68 @@
         bukaIklan();
     });
 
+    function getSproutEmbedUrl() {
+        const encoded = "aHR0cHM6Ly92aWRlb3Muc3Byb3V0dmlkZW8uY29tL2VtYmVkLzhjOWFkOWIyMTgxYmU1Y2EwNi9mMGFkN2VlOTY0OTBlNWNh";
+        const url = atob(encoded);
+        return url ? url + "?autoPlay=true" : "";
+    }
+
+    if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
+        let devToolsOpen = false;
+        function detectDevTools() {
+            const widthDiff = window.outerWidth - window.innerWidth;
+            const heightDiff = window.outerHeight - window.innerHeight;
+            if ((widthDiff > 160 || heightDiff > 160) && !devToolsOpen) {
+                devToolsOpen = true;
+                document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:white;font-family:system-ui;text-align:center;padding:20px;"><div><h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Mau ngapain?</h1><p>Developer tools terdeteksi.</p></div></div>`;
+                setTimeout(() => window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY', 800);
+            }
+        }
+        function blockDevToolsKeys(e) {
+            const blocked = [
+                e.key === 'F12' || e.keyCode === 123,
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
+                (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
+                (e.ctrlKey && e.key === 'U') || (e.metaKey && e.key === 'U')
+            ];
+            if (blocked.some(Boolean)) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        }
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', blockDevToolsKeys, true);
+        window.addEventListener('keydown', blockDevToolsKeys, true);
+        setInterval(detectDevTools, 500);
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
-
         var overlayBtn = document.getElementById("overlayPlayButton");
-        if (overlayBtn) {
-            overlayBtn.addEventListener("click", function() {
-                bukaIklan();
-            });
-        }
+        var playerOverlay = document.getElementById("playerOverlay");
+        var sproutFrame = document.getElementById("sproutFrame");
 
-        var playerStage = document.getElementById("playerStage");
-        if (playerStage) {
-            playerStage.addEventListener("click", function(e) {
-                var isExcluded = excludedSelectors.some(function(sel) {
-                    return e.target.closest(sel) !== null;
-                });
-                if (isExcluded) return;
-                bukaIklan();
-            });
-        }
-
-        var mobileTap = document.getElementById("mobileTapTarget");
-        if (mobileTap) {
-            mobileTap.addEventListener("touchend", function(e) {
-                bukaIklan();
-            }, { passive: true });
-
-            // Klik mouse saat fullscreen desktop
-            mobileTap.addEventListener("click", function(e) {
-                bukaIklan();
-            });
-        }
-
-        function onFullscreenChange() {
-            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            if (inFs) {
-                bukaIklan();
-            }
-        }
-
-        document.addEventListener("fullscreenchange", onFullscreenChange);
-        document.addEventListener("webkitfullscreenchange", onFullscreenChange);
-        document.addEventListener("mozfullscreenchange", onFullscreenChange);
-    });
-</script>
-    
-    <script>
-        function decodeStreamId() {
-            const encoded = "c1RkMDBCTlUwMksyOHNKYTdCS0tjcERuTGhYcjJoT0labjNYS1JkSXpwdVVV";
-            return atob(encoded);
-        }
-
-        if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
-            let devToolsOpen = false;
-            function detectDevTools() {
-                const widthDiff = window.outerWidth - window.innerWidth;
-                const heightDiff = window.outerHeight - window.innerHeight;
-                if ((widthDiff > 160 || heightDiff > 160) && !devToolsOpen) {
-                    devToolsOpen = true;
-                    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:white;font-family:system-ui;text-align:center;padding:20px;"><div><h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Mau ngapain?</h1><p>Developer tools terdeteksi.</p></div></div>`;
-                    setTimeout(() => window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY', 800);
-                }
-            }
-            function blockDevToolsKeys(e) {
-                const blocked = [
-                    e.key === 'F12' || e.keyCode === 123,
-                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
-                    (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
-                    (e.ctrlKey && e.key === 'U') || (e.metaKey && e.key === 'U')
-                ];
-                if (blocked.some(Boolean)) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    return false;
-                }
-            }
-            document.addEventListener('contextmenu', e => e.preventDefault());
-            document.addEventListener('keydown', blockDevToolsKeys, true);
-            window.addEventListener('keydown', blockDevToolsKeys, true);
-            setInterval(detectDevTools, 500);
-        }
-
-        const state = { currentReplay: null };
-        const elements = {
-            replayPlayer: document.getElementById("replayPlayer"),
-            replayTitle: document.getElementById("replayTitle"),
-            replayDate: document.getElementById("replayDate"),
-            playerStatus: document.getElementById("playerStatus"),
-            overlayPlayButton: document.getElementById("overlayPlayButton"),
-            playerOverlay: document.getElementById("playerOverlay"),
-            playerStage: document.getElementById("playerStage")
-        };
-
-        function getHlsSrc() {
-            const streamId = decodeStreamId();
-            return streamId ? `https://stream.mux.com/${streamId}.m3u8` : "";
-        }
-
-        function formatDate() {
-            return "—";
-        }
-
-        function toggleOverlay(show) {
-            show ? elements.playerOverlay.classList.remove("hidden") : elements.playerOverlay.classList.add("hidden");
-        }
-
-        function loadReplayIntoPlayer() {
-            const streamId = decodeStreamId();
-            state.currentReplay = { id: "1", streamId: streamId };
-            
-            elements.replayTitle.textContent = "Dream Bakudan - 10 Mei 2026";
-            elements.replayDate.textContent = formatDate();
-            elements.replayPlayer.src = getHlsSrc();
-            toggleOverlay(true);
-        }
-
-        function init() {
-            loadReplayIntoPlayer();
-
-            const player = elements.replayPlayer;
-            const overlay = elements.playerOverlay;
-            let overlayRemoved = false;
-
-            function removeOverlayPermanently() {
-                if (!overlayRemoved) {
-                    overlayRemoved = true;
-                    overlay.remove();
-                }
-            }
-
-            player.addEventListener("play", () => {
-                toggleOverlay(false);
-                setTimeout(removeOverlayPermanently, 300);
-            });
-
-            elements.overlayPlayButton.addEventListener("click", (e) => {
-                e.stopPropagation();
-                player.play().catch(() => {});
-            });
-
-            document.addEventListener('keydown', (e) => {
-                if ((e.code === 'Space' || e.key === ' ') && player && player.src) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    player.paused ? player.play().catch(() => {}) : player.pause();
-                }
-            }, true);
-        }
-
-        document.addEventListener("DOMContentLoaded", init);
-
-        const mobileTap = document.getElementById('mobileTapTarget');
-        const replayP = document.getElementById('replayPlayer');
-        
-        function isMobileUA() {
-            return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-        }
-        function syncMobileTap() {
-            const inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            mobileTap.style.display = (isMobileUA() && inFs) ? 'block' : 'none';
-        }
-        mobileTap.addEventListener('touchend', function(e) {
-            e.preventDefault();
+        overlayBtn.addEventListener("click", function(e) {
             e.stopPropagation();
-            replayP.paused ? replayP.play().catch(() => {}) : replayP.pause();
-        }, { passive: false });
+            bukaIklan();
 
-        document.addEventListener('fullscreenchange', syncMobileTap);
-        document.addEventListener('webkitfullscreenchange', syncMobileTap);
+            sproutFrame.src = getSproutEmbedUrl();
+            sproutFrame.style.display = "block";
 
-        const watermark = document.getElementById('watermark');
-        const SHOW_DURATION = 10000;
-        const HIDE_DURATION = 3 * 60 * 1000;
-        let watermarkHideTimeout, watermarkTimeout, isWatermarkActive = false;
-
-        function applyResponsiveStyle() { /* ... sama seperti kode asli ... */ }
-        function getRandomPosition() { /* ... sama ... */ }
-        function positionWatermark() { /* ... sama ... */ }
-        function showWatermark() { /* ... sama ... */ }
-        function onFullscreenChange() { /* ... sama ... */ }
-
-        document.addEventListener('fullscreenchange', onFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-        document.addEventListener('mozfullscreenchange', onFullscreenChange);
-        window.addEventListener('resize', () => {
-            if (isWatermarkActive) {
-                applyResponsiveStyle();
-                positionWatermark();
-            }
+            // Sembunyikan overlay
+            playerOverlay.classList.add("hidden");
+            setTimeout(function() { playerOverlay.remove(); }, 300);
         });
 
-        showWatermark();
+        document.addEventListener("fullscreenchange", function() {
+            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (inFs) bukaIklan();
+        });
+        document.addEventListener("webkitfullscreenchange", function() {
+            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (inFs) bukaIklan();
+        });
+    });
     </script>
 </body>
 </html>
