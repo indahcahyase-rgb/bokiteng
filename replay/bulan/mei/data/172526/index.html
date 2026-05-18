@@ -10,7 +10,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
         body { font-family: "Atkinson Hyperlegible", sans-serif; }
-        .player-stage { position: relative; background: #000; aspect-ratio: 16 / 9; }
+        .player-stage {
+            position: relative;
+            background: #000;
+            aspect-ratio: 16 / 9;
+            width: 100%;
+        }
         .player-overlay {
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
             background: linear-gradient(180deg, rgba(20,23,26,0.18) 0%, rgba(20,23,26,0.78) 100%);
@@ -21,7 +26,8 @@
             width: 78px; height: 78px; border-radius: 999px;
             border: 1px solid rgba(255,255,255,0.25); background: rgba(239,68,68,0.92);
             color: #fff; font-size: 1.8rem; box-shadow: 0 24px 50px rgba(0,0,0,0.35);
-            transition: all 0.2s ease;
+            transition: all 0.2s ease; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
         .overlay-play:hover { transform: scale(1.08); background: rgba(220,38,38,0.98); }
         .iklan-box {
@@ -34,13 +40,18 @@
             color: #fbbf24;
             font-weight: 600;
         }
-        #sproutFrame {
-            width: 100%;
-            height: 100%;
+        #vdoContainer {
             position: absolute;
             inset: 0;
-            border: none;
+            width: 100%;
+            height: 100%;
             display: none;
+            z-index: 10;
+        }
+        #vdoContainer iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
         }
     </style>
 </head>
@@ -50,15 +61,11 @@
             <a href="#"><img src="https://www.idn.app/_next/static/media/logo_light.d99f40cc.svg" alt="IDN Live" class="h-9"></a>
         </div>
     </header>
+
     <main class="max-w-5xl mx-auto w-full p-4">
         <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
             <div class="player-stage" id="playerStage">
-                <!-- Sproutvideo iframe, ditampilkan setelah overlay diklik -->
-                <iframe
-                    id="sproutFrame"
-                    allowfullscreen
-                    allow="autoplay; fullscreen"
-                ></iframe>
+                <div id="vdoContainer"></div>
                 <div id="playerOverlay" class="player-overlay">
                     <button id="overlayPlayButton" class="overlay-play">
                         <i class="fa-solid fa-play"></i>
@@ -66,11 +73,13 @@
                 </div>
             </div>
         </div>
+
         <div class="mt-5 px-1">
-            <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 id="replayTitle" class="text-white text-3xl font-bold">PASSION 200%</h1>
-            <p id="replayDate" class="text-gray-400 text-sm">17 Mei 2026</p>
+            <p class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
+            <h1 class="text-white text-3xl font-bold">PASSION 200% - 17 Mei 2026</h1>
+            <p class="text-gray-400 text-sm"></p>
         </div>
+
         <div class="iklan-box">
             <a href="https://arenareplay.my.id/" target="_blank">
                 <img src="https://i.ibb.co/xSGYwHfv/pasang-iklan-mu-disini-1.png" alt="PASANG IKLAN DISINI" class="w-full h-auto rounded-md">
@@ -80,26 +89,18 @@
 
     <script>
     var links = [
-        "https://s.shopee.co.id/9ALX1P3hxk",
-        "https://s.shopee.co.id/9026p64LIj",
-        "https://s.shopee.co.id/8pigcn4ydi",
-        "https://s.shopee.co.id/8fPGQU5byh",
-        "https://s.shopee.co.id/1gFW5cWGBM"
+        "https://s.shopee.co.id/9zuR1ePkSi",
+        "https://s.shopee.co.id/1qYjImVxbO",
+        "https://s.shopee.co.id/8piTdhtvyy",
+        "https://s.shopee.co.id/7KtfqzlEXv",
+        "https://s.shopee.co.id/gMlupq6qE"
     ];
     var delay = 180000;
 
     var excludedSelectors = [
-        '[data-media-button]',
-        '[data-media-slider]',
-        'media-time-slider',
-        'media-volume-slider',
-        'media-play-button',
-        'media-fullscreen-button',
-        'media-mute-button',
-        'media-seek-button',
-        'media-tooltip',
-        '[data-part="controls"]',
-        '[data-controls]'
+        '#vdoContainer',
+        '#vdoContainer iframe',
+        '#overlayPlayButton'
     ];
 
     function bukaIklan() {
@@ -122,11 +123,52 @@
         bukaIklan();
     });
 
-    function getSproutEmbedUrl() {
-        const encoded = "aHR0cHM6Ly92aWRlb3Muc3Byb3V0dmlkZW8uY29tL2VtYmVkL2FhOWFkOWIyMTgxYmUzYzUyMC8zNzRiNTUwNzRmMTI4NzRm";
-        const url = atob(encoded);
-        return url ? url + "?autoPlay=true" : "";
-    }
+ 
+    function decodeOtp() {
+    return atob("MjAxNjAzMTN2ZXJzQVNFMzIzMkZUQUJsaVZ6OGZ2TmZ5NWRYOGs5cTBGbnVYcXdZSEwzRVlMc1ZiNDd6dGFXaw==");
+}
+function decodePlaybackInfo() {
+    return atob("ZXlKMmFXUmxiMGxrSWpvaVlqUTFaR00wTW1FMU5qQmlORE5sWkdKa1l6aGxZMlV5TkdZek5UVXhZak1pZlE9PQ==");
+}
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var overlayBtn = document.getElementById("overlayPlayButton");
+        var playerOverlay = document.getElementById("playerOverlay");
+        var vdoContainer = document.getElementById("vdoContainer");
+
+        overlayBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            bukaIklan();
+
+            var otp = decodeOtp();
+            var playbackInfo = decodePlaybackInfo();
+
+            var iframe = document.createElement("iframe");
+            iframe.src = "https://player.vdocipher.com/v2/?otp=" + otp + "&playbackInfo=" + playbackInfo;
+            iframe.allow = "encrypted-media";
+            iframe.setAttribute("allowfullscreen", "true");
+            iframe.style.cssText = "width:100%;height:100%;border:0;";
+
+            vdoContainer.innerHTML = "";
+            vdoContainer.appendChild(iframe);
+            vdoContainer.style.display = "block";
+
+            playerOverlay.style.opacity = "0";
+            playerOverlay.style.visibility = "hidden";
+            playerOverlay.style.pointerEvents = "none";
+            setTimeout(function() { playerOverlay.remove(); }, 300);
+        });
+
+        function onFullscreenChange() {
+            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (inFs) bukaIklan();
+        }
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+        document.addEventListener("mozfullscreenchange", onFullscreenChange);
+    });
+
 
     if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
         let devToolsOpen = false;
@@ -157,33 +199,6 @@
         window.addEventListener('keydown', blockDevToolsKeys, true);
         setInterval(detectDevTools, 500);
     }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        var overlayBtn = document.getElementById("overlayPlayButton");
-        var playerOverlay = document.getElementById("playerOverlay");
-        var sproutFrame = document.getElementById("sproutFrame");
-
-        overlayBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            bukaIklan();
-
-            sproutFrame.src = getSproutEmbedUrl();
-            sproutFrame.style.display = "block";
-
-            // Sembunyikan overlay
-            playerOverlay.classList.add("hidden");
-            setTimeout(function() { playerOverlay.remove(); }, 300);
-        });
-
-        document.addEventListener("fullscreenchange", function() {
-            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            if (inFs) bukaIklan();
-        });
-        document.addEventListener("webkitfullscreenchange", function() {
-            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            if (inFs) bukaIklan();
-        });
-    });
     </script>
 </body>
 </html>
