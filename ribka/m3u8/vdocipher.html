@@ -120,11 +120,10 @@
         bukaIklan();
     });
 
-    // Decode player URL dari base64
-    function decodePlayerUrl() {
-        var encoded = "aHR0cHM6Ly9wbGF5ZXIudmRvY2lwaGVyLmNvbS92Mi8/b3RwPTIwMTYwMzEzdmVyc0FTRTMyMzJaZjBtbVdGNGRQTndoVXY2ZHBBa3F0Mm4zSjJlV0p4ZW8zWXhlVEZuY05lSE8mcGxheWJhY2tJbmZvPWV5SjJhV1JsYjBsa0lqb2lPR0pqWTJRME9EUmtZV1poTkRaaFlUazJOMlUxTVRGa1pHUmpOMlZrWVdZaWZRPT0=";
-        return atob(encoded);
-    }
+   function decodePlayerUrl() {
+    var encoded = "aHR0cHM6Ly9wbGF5ZXIudmRvY2lwaGVyLmNvbS92Mi8/b3RwPTIwMTYwMzEzdmVyc0FTRTMyMzJSUkZZMnNKaUM3NERUUjJONzV2bjloZUhGangzdnFsaW1Td0Z2eG1mUXEweXgmcGxheWJhY2tJbmZvPWV5SjJhV1JsYjBsa0lqb2lPR0pqWTJRME9EUmtZV1poTkRaaFlUazJOMlUxTVRGa1pHUmpOMlZrWVdZaWZRPT0=";
+    return atob(encoded);
+}
 
     document.addEventListener("DOMContentLoaded", function() {
         var overlayBtn = document.getElementById("overlayPlayButton");
