@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Replay</title>
+    <link rel="icon" type="image/x-icon" href="https://www.idn.app/img/logo-idn.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --red: #e8333a;
+            --red-dark: #c0272d;
+            --red-glow: rgba(232, 51, 58, 0.22);
+            --bg: #0d0f10;
+            --surface: #161a1c;
+            --surface2: #1e2225;
+            --border: rgba(255,255,255,0.07);
+            --text: #f0f0ee;
+            --muted: #7a8085;
+            --accent: #ffd166;
+        }
+
+        body {
+            font-family: "DM Sans", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Header ── */
+        header {
+            background: rgba(13,15,16,0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-inner {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header img { height: 32px; }
+
+        /* ── Live badge ── */
+        .badge-replay {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 5px 14px;
+            font-family: "Syne", sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--red);
+        }
+        .badge-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--red);
+        }
+
+        /* ── Main ── */
+        main {
+            max-width: 960px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 28px 20px 48px;
+            flex: 1;
+        }
+
+        /* ── Player shell ── */
+        .player-shell {
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+            position: relative;
+        }
+        .player-stage {
+            position: relative;
+            background: #000;
+            aspect-ratio: 16 / 9;
+            width: 100%;
+        }
+
+        /* thumbnail behind overlay */
+        .player-thumb {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            display: block;
+        }
+
+        /* overlay */
+        .player-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, rgba(10,12,13,0.25) 0%, rgba(10,12,13,0.72) 100%);
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            gap: 18px;
+        }
+        .player-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .play-ring {
+            width: 82px; height: 82px;
+            border-radius: 50%;
+            background: var(--red);
+            border: 2px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff;
+            font-size: 28px;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 0 0 0 var(--red-glow);
+        }
+        .play-ring:hover {
+            transform: scale(1.08);
+            background: var(--red-dark);
+            box-shadow: 0 0 40px var(--red-glow);
+        }
+        .play-ring i { margin-left: 4px; }
+
+        .overlay-label {
+            font-family: "Syne", sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.55);
+        }
+
+        /* loading state */
+        .player-loading {
+            position: absolute;
+            inset: 0;
+            z-index: 15;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10,12,13,0.88);
+            gap: 16px;
+        }
+        .player-loading.active { display: flex; }
+
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(255,255,255,0.08);
+            border-top-color: var(--red);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            font-size: 13px;
+            color: var(--muted);
+            letter-spacing: 0.04em;
+        }
+
+        /* error state */
+        .player-error {
+            position: absolute;
+            inset: 0;
+            z-index: 16;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10,12,13,0.92);
+            gap: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+        .player-error.active { display: flex; }
+        .error-icon { font-size: 36px; color: var(--red); }
+        .error-msg { font-size: 14px; color: var(--muted); max-width: 300px; line-height: 1.6; }
+        .retry-btn {
+            margin-top: 6px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: "Syne", sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 9px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.18s, border-color 0.18s;
+        }
+        .retry-btn:hover { background: var(--red); border-color: var(--red); color: #fff; }
+
+        /* vdocipher iframe */
+        #vdoFrame {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none;
+            z-index: 5;
+        }
+
+        /* ── Meta ── */
+        .meta {
+            margin-top: 22px;
+            padding: 0 2px;
+        }
+        .meta-status {
+            font-family: "Syne", sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--red);
+            margin-bottom: 8px;
+        }
+        .meta-title {
+            font-family: "Syne", sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1.15;
+            margin-bottom: 8px;
+        }
+        .meta-date {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        /* ── Divider ── */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 24px 0;
+        }
+
+        /* ── Ad box ── */
+        .ad-box {
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(249,115,22,0.3);
+            background: var(--surface);
+            transition: border-color 0.2s;
+        }
+        .ad-box:hover { border-color: rgba(249,115,22,0.6); }
+        .ad-box a { display: block; }
+        .ad-box img { width: 100%; height: auto; display: block; }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .meta-title { font-size: 1.5rem; }
+            .play-ring { width: 68px; height: 68px; font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-inner">
+        <a href="#"><img src="https://www.idn.app/_next/static/media/logo_light.d99f40cc.svg" alt="IDN Live"></a>
+        <span class="badge-replay"><span class="badge-dot"></span>Replay</span>
+    </div>
+</header>
+
+<main>
+    <div class="player-shell">
+        <div class="player-stage" id="playerStage">
+
+            <!-- Optional thumbnail (set src or remove) -->
+            <img class="player-thumb" id="playerThumb" src="" alt="" onerror="this.style.display='none'" />
+
+            <!-- VdoCipher iframe (injected after OTP fetch) -->
+            <iframe id="vdoFrame" allowfullscreen allow="encrypted-media"></iframe>
+
+            <!-- Loading spinner -->
+            <div class="player-loading" id="playerLoading">
+                <div class="spinner"></div>
+                <p class="loading-text">Memuat video…</p>
+            </div>
+
+            <!-- Error state -->
+            <div class="player-error" id="playerError">
+                <i class="fa-solid fa-circle-exclamation error-icon"></i>
+                <p class="error-msg" id="errorMsg">Gagal memuat video. Coba beberapa saat lagi.</p>
+                <button class="retry-btn" id="retryBtn">Coba Lagi</button>
+            </div>
+
+            <!-- Play overlay (shown by default) -->
+            <div class="player-overlay" id="playerOverlay">
+                <div class="play-ring" id="overlayPlayBtn" role="button" aria-label="Putar video" tabindex="0">
+                    <i class="fa-solid fa-play"></i>
+                </div>
+                <span class="overlay-label">Putar Replay</span>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="meta">
+        <p class="meta-status" id="playerStatus">Replay Ready</p>
+        <h1 class="meta-title" id="replayTitle">Dream Bakudan</h1>
+        <p class="meta-date" id="replayDate">10 Mei 2026</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="ad-box">
+        <a href="https://arenareplay.my.id/" target="_blank" rel="noopener">
+            <img src="https://i.ibb.co/xSGYwHfv/pasang-iklan-mu-disini-1.png" alt="Pasang Iklan Disini" />
+        </a>
+    </div>
+</main>
+
+<script>
+(function () {
+    /* ─────────────────────────────────────────────
+       CONFIG — edit these values
+    ──────────────────────────────────────────────*/
+    var CONFIG = {
+        // VdoCipher video ID (the hash in your video URL)
+        videoId: "8bccd484dafa46aa967e511dddc7edaf",
+
+        // Your backend endpoint that returns { otp, playbackInfo }
+        // This endpoint must proxy the VdoCipher OTP API with your API secret,
+        // so the secret is never exposed on the client side.
+        // Example: "https://yoursite.com/api/vdo-otp"
+        // Leave empty to use direct VdoCipher API (only for testing — exposes key)
+        otpEndpoint: "",
+
+        // (For development/testing only) Direct VdoCipher API secret.
+        // Remove this in production; always use a backend proxy instead.
+        apiSecret: "YOUR_API_SECRET_HERE",
+
+        // TTL for OTP in seconds
+        ttl: 300,
+
+        // Optional thumbnail image URL (shown before play)
+        thumbnail: "",
+
+        // Affiliate / ad links (opens on interaction)
+        adLinks: [
+            "https://s.shopee.co.id/9zuR1ePkSi",
+            "https://s.shopee.co.id/1qYjImVxbO",
+            "https://s.shopee.co.id/8piTdhtvyy",
+            "https://s.shopee.co.id/7KtfqzlEXv",
+            "https://s.shopee.co.id/gMlupq6qE"
+        ],
+        adCooldownMs: 180000
+    };
+    /* ──────────────────────────────────────────── */
+
+    var overlay    = document.getElementById("playerOverlay");
+    var playBtn    = document.getElementById("overlayPlayBtn");
+    var loading    = document.getElementById("playerLoading");
+    var errorEl    = document.getElementById("playerError");
+    var errorMsg   = document.getElementById("errorMsg");
+    var retryBtn   = document.getElementById("retryBtn");
+    var vdoFrame   = document.getElementById("vdoFrame");
+    var thumb      = document.getElementById("playerThumb");
+
+    // Set thumbnail
+    if (CONFIG.thumbnail) { thumb.src = CONFIG.thumbnail; }
+
+    /* ── Ad opener ── */
+    localStorage.removeItem("lastAdOpen");
+    function openAd() {
+        var last = localStorage.getItem("lastAdOpen");
+        var now  = Date.now();
+        if (!last || (now - parseInt(last, 10)) > CONFIG.adCooldownMs) {
+            var url = CONFIG.adLinks[Math.floor(Math.random() * CONFIG.adLinks.length)];
+            window.open(url, "_blank");
+            localStorage.setItem("lastAdOpen", now);
+        }
+    }
+
+    /* ── UI state helpers ── */
+    function showLoading() {
+        loading.classList.add("active");
+        errorEl.classList.remove("active");
+    }
+    function showError(msg) {
+        loading.classList.remove("active");
+        errorEl.classList.add("active");
+        if (msg) errorMsg.textContent = msg;
+    }
+    function showPlayer(otp, playbackInfo) {
+        vdoFrame.src = "https://player.vdocipher.com/v2/?otp=" + encodeURIComponent(otp)
+                       + "&playbackInfo=" + encodeURIComponent(playbackInfo);
+        vdoFrame.style.display = "block";
+        loading.classList.remove("active");
+    }
+
+    /* ── OTP fetch ── */
+    async function fetchOTP() {
+        // Option A: via your backend proxy (recommended for production)
+        if (CONFIG.otpEndpoint) {
+            var res = await fetch(CONFIG.otpEndpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ videoId: CONFIG.videoId, ttl: CONFIG.ttl })
+            });
+            if (!res.ok) throw new Error("Server error: " + res.status);
+            return res.json();
+        }
+
+        // Option B: direct VdoCipher API (development only — key visible in source!)
+        var res = await fetch(
+            "https://dev.vdocipher.com/api/videos/" + CONFIG.videoId + "/otp",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Apisecret " + CONFIG.apiSecret
+                },
+                body: JSON.stringify({ ttl: CONFIG.ttl })
+            }
+        );
+        if (!res.ok) throw new Error("VdoCipher API error: " + res.status);
+        return res.json();
+    }
+
+    /* ── Play handler ── */
+    async function startPlay() {
+        overlay.classList.add("hidden");
+        showLoading();
+        openAd();
+
+        try {
+            var data = await fetchOTP();
+            if (!data.otp || !data.playbackInfo) throw new Error("OTP tidak valid.");
+            showPlayer(data.otp, data.playbackInfo);
+            document.getElementById("playerStatus").textContent = "▶ Sedang Diputar";
+        } catch (err) {
+            console.error(err);
+            showError("Gagal memuat video: " + (err.message || "Terjadi kesalahan."));
+            overlay.classList.remove("hidden");
+        }
+    }
+
+    /* ── Event listeners ── */
+    playBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        startPlay();
+    });
+    playBtn.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); startPlay(); }
+    });
+    retryBtn.addEventListener("click", function () {
+        errorEl.classList.remove("active");
+        startPlay();
+    });
+
+    /* Fullscreen → open ad */
+    ["fullscreenchange", "webkitfullscreenchange"].forEach(function (ev) {
+        document.addEventListener(ev, function () {
+            if (document.fullscreenElement || document.webkitFullscreenElement) openAd();
+        });
+    });
+
+    /* Global click → open ad (excluding player controls) */
+    var excludes = [
+        '[data-media-button]','[data-media-slider]',
+        'media-time-slider','media-volume-slider',
+        'media-play-button','media-fullscreen-button',
+        'media-mute-button','media-seek-button',
+        '[data-part="controls"]','[data-controls]'
+    ];
+    document.addEventListener("click", function (e) {
+        var blocked = excludes.some(function (sel) { return e.target.closest(sel); });
+        if (!blocked) openAd();
+    });
+
+    /* ── DevTools detection (desktop only) ── */
+    var isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                   || window.innerWidth <= 768;
+    if (!isMobile) {
+        var dtOpen = false;
+        setInterval(function () {
+            var wDiff = window.outerWidth  - window.innerWidth;
+            var hDiff = window.outerHeight - window.innerHeight;
+            if ((wDiff > 160 || hDiff > 160) && !dtOpen) {
+                dtOpen = true;
+                document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0d0f10;color:#f0f0ee;font-family:system-ui;text-align:center;padding:20px"><div><h1 style="font-size:2rem;margin-bottom:1rem">🚫 Mau ngapain?</h1><p>Developer tools terdeteksi.</p></div></div>';
+                setTimeout(function () { window.location.href = "https://www.youtube.com/watch?v=4ckrU8qqblY"; }, 800);
+            }
+        }, 500);
+
+        function blockKeys(e) {
+            var blocked = [
+                e.key === "F12" || e.keyCode === 123,
+                (e.ctrlKey || e.metaKey) && e.shiftKey && ["I","J","C"].includes(e.key),
+                (e.ctrlKey || e.metaKey) && e.key === "U"
+            ];
+            if (blocked.some(Boolean)) { e.preventDefault(); e.stopImmediatePropagation(); }
+        }
+        document.addEventListener("contextmenu",  function (e) { e.preventDefault(); });
+        document.addEventListener("keydown", blockKeys, true);
+        window.addEventListener("keydown", blockKeys, true);
+    }
+})();
+</script>
+</body>
+</html>
