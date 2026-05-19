@@ -67,9 +67,9 @@
             height: 100%;
             display: block;
             background: #000;
-            object-fit: contain;
-            min-height: 0;
-            min-width: 0;
+            /* Avoid object-fit on Android hardware decoder — causes black frame */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
         }
 
         /* Custom Controls */
@@ -275,15 +275,19 @@
         </div>
     </header>
     <main class="max-w-5xl mx-auto w-full p-4">
-        <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
+        <div class="player-shell" style="border-radius:28px; border:1px solid #374151; box-shadow:0 25px 50px -12px rgba(0,0,0,0.9); overflow:hidden; -webkit-mask-image:-webkit-radial-gradient(white,black);">
             <div class="player-stage" id="playerStage">
 
                 <video
                     id="replayVideo"
-                    preload="metadata"
+                    preload="auto"
                     playsinline
+                    webkit-playsinline
+                    x5-playsinline
+                    x5-video-player-type="h5"
+                    x5-video-player-fullscreen="false"
                     controlsList="nodownload"
-                    poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'%3E%3Crect fill='%23000' width='1280' height='720'/%3E%3C/svg%3E">
+                    poster="">
                     <source id="videoSource" src="" type="video/mp4">
                     Browser Anda tidak mendukung video.
                 </video>
@@ -453,17 +457,11 @@
         var speedOptions   = document.getElementById("speedOptions");
         var currentSpeedLabel = document.getElementById("currentSpeedLabel");
 
-        // Set video source
-        source.src = "https://861087038.tapecontent.net/radosgw/AlvW01XLY9iXyO8/mXgUstAtXwRofJbBdxkeiSC3TeIzzpQb0v5ZhkEPrHzreLBXyvT9hStzSAkTm-j7_jjiehsqDotnY0ONtxurKNyXEQ_HWq_3krTQjP40z5Sw7_xcLPE6jvl4kQZaZh0bj-ttRdm8zNcTtUPjM9_FZsJmLc_iP2q4OCdLyYaVgoreKszlTtMU0Pwp3Mimm0aXkzov5BFC--G55yB6cig0XkF_WSnRRXbUgjWlKq-S5Bvd5aCmG7AYMoEN5_n_RhLhgMCF95a8lmW5_yc91bk6py60AYfEfRlY9Xe4ePdoazTGt0daXc20bSQ3chV8JUZvyRrWFeYJa78AvauW/Cara+Meminum+Ramune+-++17+Mei+2026.mp4?stream=1";
+        // Android hardware decoder fix: set src directly on video (not just source child)
+        // Some Android WebView/Chrome versions ignore <source> child element
+        video.src = "https://861087038.tapecontent.net/radosgw/AlvW01XLY9iXyO8/mXgUstAtXwRofJbBdxkeiSC3TeIzzpQb0v5ZhkEPrHzreLBXyvT9hStzSAkTm-j7_jjiehsqDotnY0ONtxurKNyXEQ_HWq_3krTQjP40z5Sw7_xcLPE6jvl4kQZaZh0bj-ttRdm8zNcTtUPjM9_FZsJmLc_iP2q4OCdLyYaVgoreKszlTtMU0Pwp3Mimm0aXkzov5BFC--G55yB6cig0XkF_WSnRRXbUgjWlKq-S5Bvd5aCmG7AYMoEN5_n_RhLhgMCF95a8lmW5_yc91bk6py60AYfEfRlY9Xe4ePdoazTGt0daXc20bSQ3chV8JUZvyRrWFeYJa78AvauW/Cara+Meminum+Ramune+-++17+Mei+2026.mp4?stream=1";
+        source.src = video.src;
         video.load();
-
-        // Chrome Android black screen fix: force repaint on first frame
-        video.addEventListener("loadeddata", function() {
-            video.style.display = 'none';
-            // eslint-disable-next-line no-unused-expressions
-            video.offsetHeight; // trigger reflow
-            video.style.display = 'block';
-        }, { once: true });
 
         // ---- Helpers ----
         function formatTime(s) {
