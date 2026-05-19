@@ -278,7 +278,7 @@
                     Browser Anda tidak mendukung video.
                 </video>
 
-                <!-- Settings Menu -->
+           
                 <div class="settings-menu" id="settingsMenu">
                     <div class="settings-header">Pengaturan</div>
                     <div class="settings-divider"></div>
@@ -311,9 +311,9 @@
                     </div>
                 </div>
 
-                <!-- Custom Video Controls -->
+    
                 <div class="video-controls" id="videoControls">
-                    <!-- Progress row -->
+      
                     <div class="controls-row">
                         <div class="progress-wrap" id="progressWrap">
                             <div class="progress-track" id="progressTrack">
@@ -323,20 +323,20 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Buttons row -->
+
                     <div class="controls-row">
                         <button class="control-btn" id="playPauseBtn" title="Play/Pause">
                             <i class="fa-solid fa-play"></i>
                         </button>
-                        <!-- Skip backward -->
+    
                         <button class="control-btn" id="skipBackBtn" title="Mundur 10 detik">
                             <i class="fa-solid fa-rotate-left"></i>
                         </button>
-                        <!-- Skip forward -->
+                 
                         <button class="control-btn" id="skipFwdBtn" title="Maju 10 detik">
                             <i class="fa-solid fa-rotate-right"></i>
                         </button>
-                        <!-- Volume -->
+           
                         <div class="volume-wrap" id="volumeWrap">
                             <button class="control-btn" id="volumeBtn" title="Volume">
                                 <i class="fa-solid fa-volume-high"></i>
@@ -345,15 +345,15 @@
                                 <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100">
                             </div>
                         </div>
-                        <!-- Time -->
+               
                         <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
-                        <!-- Spacer -->
+                 
                         <div style="flex:1"></div>
-                        <!-- Settings -->
+            
                         <button class="control-btn" id="settingsBtn" title="Pengaturan">
                             <i class="fa-solid fa-gear"></i>
                         </button>
-                        <!-- Fullscreen -->
+                   
                         <button class="control-btn" id="fullscreenBtn" title="Layar Penuh">
                             <i class="fa-solid fa-expand"></i>
                         </button>
@@ -383,9 +383,6 @@
     </main>
 
     <script>
-    // =============================================
-    // IKLAN
-    // =============================================
     var adLinks = [
         "https://s.shopee.co.id/9zuR1ePkSi",
         "https://s.shopee.co.id/1qYjImVxbO",
@@ -412,9 +409,7 @@
         bukaIklan();
     });
 
-    // =============================================
-    // VIDEO
-    // =============================================
+ 
     document.addEventListener("DOMContentLoaded", function() {
         var video        = document.getElementById("replayVideo");
         var source       = document.getElementById("videoSource");
@@ -423,7 +418,7 @@
         var mobileTap    = document.getElementById("mobileTapTarget");
         var playerStage  = document.getElementById("playerStage");
 
-        // Controls elements
+
         var playPauseBtn   = document.getElementById("playPauseBtn");
         var skipBackBtn    = document.getElementById("skipBackBtn");
         var skipFwdBtn     = document.getElementById("skipFwdBtn");
@@ -443,11 +438,11 @@
         var speedOptions   = document.getElementById("speedOptions");
         var currentSpeedLabel = document.getElementById("currentSpeedLabel");
 
-        // Set video source
+
         source.src = "https://861087038.tapecontent.net/radosgw/AlvW01XLY9iXyO8/mXgUstAtXwRofJbBdxkeiSC3TeIzzpQb0v5ZhkEPrHzreLBXyvT9hStzSAkTm-j7_jjiehsqDotnY0ONtxurKNyXEQ_HWq_3krTQjP40z5Sw7_xcLPE6jvl4kQZaZh0bj-ttRdm8zNcTtUPjM9_FZsJmLc_iP2q4OCdLyYaVgoreKszlTtMU0Pwp3Mimm0aXkzov5BFC--G55yB6cig0XkF_WSnRRXbUgjWlKq-S5Bvd5aCmG7AYMoEN5_n_RhLhgMCF95a8lmW5_yc91bk6py60AYfEfRlY9Xe4ePdoazTGt0daXc20bSQ3chV8JUZvyRrWFeYJa78AvauW/Cara+Meminum+Ramune+-++17+Mei+2026.mp4?stream=1";
         video.load();
 
-        // ---- Helpers ----
+
         function formatTime(s) {
             if (isNaN(s) || s < 0) return "0:00";
             var h = Math.floor(s / 3600);
@@ -469,9 +464,9 @@
             }
         }
 
-        var lastVolume = 1; // remember volume before mute
+        var lastVolume = 1; 
 
-        // ---- Play / Pause ----
+
         playPauseBtn.addEventListener("click", function(e) {
             e.stopPropagation();
             video.paused ? video.play().catch(function(){}) : video.pause();
@@ -484,7 +479,7 @@
             playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         });
 
-        // ---- Skip ----
+
         skipBackBtn.addEventListener("click", function(e) {
             e.stopPropagation();
             video.currentTime = Math.max(0, video.currentTime - 10);
@@ -494,16 +489,16 @@
             video.currentTime = Math.min(video.duration || 0, video.currentTime + 10);
         });
 
-        // ---- Volume ----
+     
         volumeBtn.addEventListener("click", function(e) {
             e.stopPropagation();
             if (video.muted || video.volume === 0) {
-                // Unmute
+
                 video.muted = false;
                 video.volume = lastVolume > 0 ? lastVolume : 0.5;
                 volumeSlider.value = video.volume * 100;
             } else {
-                // Mute
+ 
                 lastVolume = video.volume;
                 video.muted = true;
                 volumeSlider.value = 0;
@@ -520,7 +515,7 @@
             updateVolumeIcon();
         });
 
-        // Show/hide volume slider on mobile tap
+
         volumeBtn.addEventListener("touchend", function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -529,7 +524,7 @@
 
         video.addEventListener("volumechange", updateVolumeIcon);
 
-        // ---- Progress bar ----
+
         var isSeeking = false;
 
         function seekTo(e) {
@@ -571,7 +566,7 @@
             timeDisplay.textContent = formatTime(video.currentTime) + " / " + formatTime(video.duration);
         });
 
-        // Buffered progress
+
         video.addEventListener("progress", function() {
             if (video.buffered.length && video.duration) {
                 var bufferedEnd = video.buffered.end(video.buffered.length - 1);
@@ -579,13 +574,13 @@
             }
         });
 
-        // ---- Settings menu ----
+    
         settingsBtn.addEventListener("click", function(e) {
             e.stopPropagation();
             settingsMenu.classList.toggle("open");
         });
 
-        // Speed submenu
+
         speedMenuToggle.addEventListener("click", function(e) {
             e.stopPropagation();
             speedOptions.classList.toggle("open");
@@ -606,7 +601,7 @@
             });
         });
 
-        // Close settings on outside click
+
         document.addEventListener("click", function(e) {
             if (!settingsMenu.contains(e.target) && e.target !== settingsBtn) {
                 settingsMenu.classList.remove("open");
@@ -614,7 +609,7 @@
             }
         });
 
-        // ---- Fullscreen ----
+ 
         fullscreenBtn.addEventListener("click", function(e) {
             e.stopPropagation();
             var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -645,7 +640,7 @@
         document.addEventListener("fullscreenchange", updateFullscreenIcon);
         document.addEventListener("webkitfullscreenchange", updateFullscreenIcon);
 
-        // ---- Controls visibility ----
+  
         var hideControlsTimer;
         function showControls() {
             videoControls.classList.add("visible");
@@ -683,7 +678,7 @@
             video.paused ? video.play().catch(function(){}) : video.pause();
         });
 
-        // ---- Overlay ----
+  
         var overlayGone = false;
         function hideOverlay() {
             if (overlayGone) return;
@@ -706,7 +701,7 @@
             bukaIklan();
         });
 
-        // Mobile tap target fullscreen
+   
         if (mobileTap) {
             mobileTap.addEventListener("touchend", function() { bukaIklan(); }, { passive: true });
             mobileTap.addEventListener("click", function() { bukaIklan(); });
@@ -722,7 +717,7 @@
         document.addEventListener("webkitfullscreenchange", onFsChange);
         document.addEventListener("mozfullscreenchange", onFsChange);
 
-        // ---- Keyboard shortcuts ----
+     
         document.addEventListener('keydown', function(e) {
             if (document.activeElement.tagName === 'INPUT') return;
             if (e.code === 'Space' || e.key === ' ') {
@@ -751,9 +746,7 @@
         }, true);
     });
 
-    // =============================================
-    // BLOKIR DEVTOOLS (desktop only)
-    // =============================================
+
     if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
         var devToolsOpen = false;
         function detectDevTools() {
@@ -784,9 +777,7 @@
         setInterval(detectDevTools, 500);
     }
 
-    // =============================================
-    // WATERMARK
-    // =============================================
+
     var watermark = document.getElementById('watermark');
     var SHOW_DURATION = 10000;
     var HIDE_DURATION = 3 * 60 * 1000;
