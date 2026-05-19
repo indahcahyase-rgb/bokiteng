@@ -71,7 +71,7 @@
                               stream-type="on-demand"
                               playsinline
                               crossorigin>
-                    <media-provider></media-provider>
+                    <media-provider id="mediaProvider"></media-provider>
                     <media-video-layout small-layout-when="never"></media-video-layout>
                     <div id="mobileTapTarget"></div>
                     <div id="watermark" style="display:none;">arenareplay.my.id</div>
@@ -97,7 +97,6 @@
 
     <script type="module" src="https://cdn.vidstack.io/player"></script>
 
-
     <script>
     var links = [
         "https://s.shopee.co.id/9zuR1ePkSi",
@@ -106,7 +105,7 @@
         "https://s.shopee.co.id/7KtfqzlEXv",
         "https://s.shopee.co.id/gMlupq6qE"
     ];
-    var delay = 180000; // 5 menit
+    var delay = 180000;
 
     var excludedSelectors = [
         '[data-media-button]',
@@ -143,7 +142,6 @@
     });
 
     document.addEventListener("DOMContentLoaded", function() {
-
         var overlayBtn = document.getElementById("overlayPlayButton");
         if (overlayBtn) {
             overlayBtn.addEventListener("click", function() {
@@ -167,8 +165,6 @@
             mobileTap.addEventListener("touchend", function(e) {
                 bukaIklan();
             }, { passive: true });
-
-            // Klik mouse saat fullscreen desktop
             mobileTap.addEventListener("click", function(e) {
                 bukaIklan();
             });
@@ -185,8 +181,8 @@
         document.addEventListener("webkitfullscreenchange", onFullscreenChange);
         document.addEventListener("mozfullscreenchange", onFullscreenChange);
     });
-</script>
-    
+    </script>
+
     <script>
         // Encoded MP4 URL (base64)
         function decodeVideoUrl() {
@@ -224,7 +220,6 @@
             setInterval(detectDevTools, 500);
         }
 
-        const state = { currentReplay: null };
         const elements = {
             replayPlayer: document.getElementById("replayPlayer"),
             replayTitle: document.getElementById("replayTitle"),
@@ -235,34 +230,27 @@
             playerStage: document.getElementById("playerStage")
         };
 
-        function getVideoSrc() {
-            // Decode dan return URL MP4 langsung
-            return decodeVideoUrl();
-        }
-
-        function formatDate() {
-            return "—";
-        }
-
         function toggleOverlay(show) {
-            show ? elements.playerOverlay.classList.remove("hidden") : elements.playerOverlay.classList.add("hidden");
-        }
-
-        function loadReplayIntoPlayer() {
-            state.currentReplay = { id: "1" };
-            
-            elements.replayTitle.textContent = "Arena Replay";
-            elements.replayDate.textContent = formatDate();
-            elements.replayPlayer.src = getVideoSrc();
-            toggleOverlay(true);
+            show
+                ? elements.playerOverlay.classList.remove("hidden")
+                : elements.playerOverlay.classList.add("hidden");
         }
 
         function init() {
-            loadReplayIntoPlayer();
-
+            const videoUrl = decodeVideoUrl();
             const player = elements.replayPlayer;
             const overlay = elements.playerOverlay;
             let overlayRemoved = false;
+
+            elements.replayTitle.textContent = "Arena Replay";
+            elements.replayDate.textContent = "—";
+
+            // PERBAIKAN UTAMA:
+            // Untuk MP4 langsung, vidstack memerlukan objek dengan src + type
+            // bukan string URL biasa (itu untuk YouTube)
+            player.src = [{ src: videoUrl, type: "video/mp4" }];
+
+            toggleOverlay(true);
 
             function removeOverlayPermanently() {
                 if (!overlayRemoved) {
@@ -290,11 +278,18 @@
             }, true);
         }
 
-        document.addEventListener("DOMContentLoaded", init);
+        // Tunggu vidstack custom elements siap
+        document.addEventListener("DOMContentLoaded", () => {
+            customElements.whenDefined('media-player').then(() => {
+                init();
+            }).catch(() => {
+                setTimeout(init, 800);
+            });
+        });
 
         const mobileTap = document.getElementById('mobileTapTarget');
         const replayP = document.getElementById('replayPlayer');
-        
+
         function isMobileUA() {
             return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
         }
