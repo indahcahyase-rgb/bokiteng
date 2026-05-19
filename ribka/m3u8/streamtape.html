@@ -73,7 +73,7 @@
         <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
             <div class="player-stage" id="playerStage">
 
-                <!-- VIDEO: sama persis seperti streamtes.html yang berhasil -->
+                <!-- SRC LANGSUNG DI HTML — sama persis seperti streamtes.html yang berhasil -->
                 <video
                     id="replayVideo"
                     controls
@@ -81,7 +81,9 @@
                     playsinline
                     controlsList="nodownload"
                     poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'%3E%3Crect fill='%23000' width='1280' height='720'/%3E%3C/svg%3E">
-                    <source id="videoSource" src="" type="video/mp4">
+                    <source
+                        src="https://861087038.tapecontent.net/radosgw/AlvW01XLY9iXyO8/mXgUstAtXwRofJbBdxkeiSC3TeIzzpQb0v5ZhkEPrHzreLBXyvT9hStzSAkTm-j7_jjiehsqDotnY0ONtxurNKyEQ_HWq_3krTQjP40z5Sw7_xcLPE6jvl4kQZaZh0bj-ttRdm8zNcTtUPjM9_FZsJmLc_iP2q4OCdLyYaVgoreKszlTtMU0Pwp3Mimm0aXkzov5BFC--G55yB6cig0XkF_WSnRRXbUgjWlKq-S5Bvd5aCmG7AYMoEN5_n_RhLhgMCF95a8lmW5_yc91bk6py60AYfEfRlY9Xe4ePdoazTGt0daXc20bSQ3chV8JUZvyRrWFeYJa78AvauW/Cara+Meminum+Ramune+-++17+Mei+2026.mp4?stream=1"
+                        type="video/mp4">
                     Browser Anda tidak mendukung video.
                 </video>
 
@@ -96,9 +98,9 @@
             </div>
         </div>
         <div class="mt-5 px-1">
-            <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 id="replayTitle" class="text-white text-3xl font-bold">Arena Replay</h1>
-            <p id="replayDate" class="text-gray-400 text-sm">—</p>
+            <p class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
+            <h1 class="text-white text-3xl font-bold">Arena Replay</h1>
+            <p class="text-gray-400 text-sm">—</p>
         </div>
         <div class="iklan-box">
             <a href="https://arenareplay.my.id/" target="_blank">
@@ -132,33 +134,12 @@
 
     localStorage.removeItem("lastAdOpen");
 
-    // Klik area luar video = buka iklan
-    document.addEventListener("click", function(e) {
-        // Jangan trigger dari video, kontrol video, tombol, atau link
-        if (e.target.closest('video') || e.target.closest('a') || e.target.closest('.iklan-box')) return;
-        bukaIklan();
-    });
-
-    // =============================================
-    // VIDEO
-    // =============================================
-    function decodeVideoUrl() {
-        // Base64 dari URL MP4 lengkap
-        const encoded = "aHR0cHM6Ly84NjEwODcwMzgudGFwZWNvbnRlbnQubmV0L3JhZG9zZ3cvQWx2VzAxWExZOWlYeU84L21YZ1VzdEF0WHdSb2ZKYkJkeGtlaVNDM1RlSXp6cFFiMHY1WmhrRVBySHplckxCWHl2VDloc3R6U0FrVG0tajdfamppZWhzcURvdG5ZME9OdHh1ck5LeUVRX0hXcV8za3JUUUpQNDB6NVN3N194Y0xQRTZqdmw0a1FaYVpoMGJqLXR0UmRtOHpOY1R0VVBqTTlfRlpzSm1MY19pUDJxNE9DZEx5WWFWZm9yZUtzekxUdE1VMFBvcDNNaW1tMGFYa3pvdjVCRkMtLUc1NXlCNmNpZzBYa0ZfV1NuUlJiVWdqV2xLcS1TNUJlZDVhQ21HN0FZTW9FTjVfbl9SaExoZ01DRjk1YThsbVc1X3ljOTFiazZweTYwQVlmRWZSbFk5WGU0ZVBkb2F6VEd0MGRhWGMyMGJTUTNjaFY4SlVadnlSclhXRmVZSmE3OEF2YXVXL0NhcmErTWVtaW51bStSYW11bmUrLSsrMTcrTWVpKzIwMjYubXA0P3N0cmVhbT0x";
-        return atob(encoded);
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        var video   = document.getElementById("replayVideo");
-        var source  = document.getElementById("videoSource");
-        var overlay = document.getElementById("playerOverlay");
+    document.addEventListener("DOMContentLoaded", function () {
+        var video      = document.getElementById("replayVideo");
+        var overlay    = document.getElementById("playerOverlay");
         var overlayBtn = document.getElementById("overlayPlayButton");
         var mobileTap  = document.getElementById("mobileTapTarget");
         var playerStage = document.getElementById("playerStage");
-
-        // Set src via <source> element — persis seperti streamtes.html
-        source.src = decodeVideoUrl();
-        video.load(); // reload setelah src di-set via JS
 
         // Sembunyikan overlay saat play
         var overlayGone = false;
@@ -166,7 +147,7 @@
             if (overlayGone) return;
             overlayGone = true;
             overlay.classList.add("hidden");
-            setTimeout(function() {
+            setTimeout(function () {
                 if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
             }, 300);
         }
@@ -174,129 +155,119 @@
         video.addEventListener("play", hideOverlay);
 
         // Tombol overlay
-        overlayBtn.addEventListener("click", function(e) {
+        overlayBtn.addEventListener("click", function (e) {
             e.stopPropagation();
             bukaIklan();
-            video.play().catch(function() {});
+            video.play().catch(function () {});
         });
 
-        // Klik stage (bukan video)
-        playerStage.addEventListener("click", function(e) {
-            if (e.target.closest('video')) return;
+        // Klik area stage (bukan video/kontrol)
+        playerStage.addEventListener("click", function (e) {
+            if (e.target.closest("video") || e.target.closest("button")) return;
+            bukaIklan();
+        });
+
+        // Klik area luar player
+        document.addEventListener("click", function (e) {
+            if (e.target.closest("#playerStage") || e.target.closest(".iklan-box") || e.target.closest("a")) return;
             bukaIklan();
         });
 
         // Mobile tap target saat fullscreen
         if (mobileTap) {
-            mobileTap.addEventListener("touchend", function() { bukaIklan(); }, { passive: true });
-            mobileTap.addEventListener("click", function() { bukaIklan(); });
+            mobileTap.addEventListener("touchend", function () { bukaIklan(); }, { passive: true });
+            mobileTap.addEventListener("click", function () { bukaIklan(); });
         }
 
-        // Fullscreen handler
+        // Fullscreen
         function onFsChange() {
             var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
             if (inFs) bukaIklan();
             var isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-            if (mobileTap) mobileTap.style.display = (isMobile && inFs) ? 'block' : 'none';
+            if (mobileTap) mobileTap.style.display = (isMobile && inFs) ? "block" : "none";
         }
         document.addEventListener("fullscreenchange", onFsChange);
         document.addEventListener("webkitfullscreenchange", onFsChange);
         document.addEventListener("mozfullscreenchange", onFsChange);
 
         // Spasi = play/pause
-        document.addEventListener('keydown', function(e) {
-            if ((e.code === 'Space' || e.key === ' ') && document.activeElement.tagName !== 'INPUT') {
+        document.addEventListener("keydown", function (e) {
+            if ((e.code === "Space" || e.key === " ") && document.activeElement.tagName !== "INPUT") {
                 e.preventDefault();
-                video.paused ? video.play().catch(function(){}) : video.pause();
+                video.paused ? video.play().catch(function () {}) : video.pause();
             }
         }, true);
+
+        // =============================================
+        // WATERMARK
+        // =============================================
+        var watermark    = document.getElementById("watermark");
+        var SHOW_DUR     = 10000;
+        var HIDE_DUR     = 3 * 60 * 1000;
+        var wmHideT, wmShowT, wmActive = false;
+
+        function applyWmStyle() {
+            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            watermark.style.fontSize = inFs ? "1.4rem" : "0.85rem";
+        }
+        function positionWm() {
+            watermark.style.left = (10 + Math.random() * 70) + "%";
+            watermark.style.top  = (10 + Math.random() * 70) + "%";
+        }
+        function showWm() {
+            if (!watermark) return;
+            applyWmStyle();
+            positionWm();
+            watermark.style.display = "block";
+            wmActive = true;
+            wmHideT = setTimeout(function () {
+                watermark.style.display = "none";
+                wmActive = false;
+                wmShowT = setTimeout(showWm, HIDE_DUR);
+            }, SHOW_DUR);
+        }
+        function onFsWm() {
+            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (inFs) { clearTimeout(wmHideT); clearTimeout(wmShowT); showWm(); }
+        }
+        document.addEventListener("fullscreenchange", onFsWm);
+        document.addEventListener("webkitfullscreenchange", onFsWm);
+        document.addEventListener("mozfullscreenchange", onFsWm);
+        window.addEventListener("resize", function () {
+            if (wmActive) { applyWmStyle(); positionWm(); }
+        });
+
+        showWm();
     });
 
     // =============================================
     // BLOKIR DEVTOOLS (desktop only)
     // =============================================
     if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
-        var devToolsOpen = false;
+        var devOpen = false;
         function detectDevTools() {
             var wd = window.outerWidth - window.innerWidth;
             var hd = window.outerHeight - window.innerHeight;
-            if ((wd > 160 || hd > 160) && !devToolsOpen) {
-                devToolsOpen = true;
+            if ((wd > 160 || hd > 160) && !devOpen) {
+                devOpen = true;
                 document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:white;font-family:system-ui;text-align:center;padding:20px;"><div><h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Mau ngapain?</h1><p>Developer tools terdeteksi.</p></div></div>';
-                setTimeout(function() { window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY'; }, 800);
+                setTimeout(function () { window.location.href = "https://www.youtube.com/watch?v=4ckrU8qqblY"; }, 800);
             }
         }
-        function blockDevToolsKeys(e) {
+        function blockKeys(e) {
             var blocked = [
-                e.key === 'F12' || e.keyCode === 123,
-                (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)),
-                (e.metaKey && e.altKey && ['I','J','C'].includes(e.key)),
-                (e.ctrlKey || e.metaKey) && e.key === 'U'
+                e.key === "F12" || e.keyCode === 123,
+                (e.ctrlKey && e.shiftKey && ["I","J","C"].includes(e.key)),
+                (e.metaKey && e.altKey && ["I","J","C"].includes(e.key)),
+                (e.ctrlKey || e.metaKey) && e.key === "U"
             ];
-            if (blocked.some(Boolean)) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                return false;
-            }
+            if (blocked.some(Boolean)) { e.preventDefault(); e.stopImmediatePropagation(); return false; }
         }
-        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
-        document.addEventListener('keydown', blockDevToolsKeys, true);
-        window.addEventListener('keydown', blockDevToolsKeys, true);
+        document.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+        document.addEventListener("keydown", blockKeys, true);
+        window.addEventListener("keydown", blockKeys, true);
         setInterval(detectDevTools, 500);
     }
-
-    // =============================================
-    // WATERMARK
-    // =============================================
-    var watermark = document.getElementById('watermark');
-    var SHOW_DURATION = 10000;
-    var HIDE_DURATION = 3 * 60 * 1000;
-    var wmHideTimeout, wmShowTimeout, isWmActive = false;
-
-    function applyResponsiveStyle() {
-        var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-        watermark.style.fontSize = inFs ? '1.4rem' : '0.85rem';
-    }
-    function getRandomPosition() {
-        var margin = 10;
-        return {
-            x: margin + Math.random() * (80 - margin),
-            y: margin + Math.random() * (80 - margin)
-        };
-    }
-    function positionWatermark() {
-        var pos = getRandomPosition();
-        watermark.style.left = pos.x + '%';
-        watermark.style.top  = pos.y + '%';
-    }
-    function showWatermark() {
-        if (!watermark) return;
-        applyResponsiveStyle();
-        positionWatermark();
-        watermark.style.display = 'block';
-        isWmActive = true;
-        wmHideTimeout = setTimeout(function() {
-            watermark.style.display = 'none';
-            isWmActive = false;
-            wmShowTimeout = setTimeout(showWatermark, HIDE_DURATION);
-        }, SHOW_DURATION);
-    }
-    function onFsChangeWatermark() {
-        var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-        if (inFs) {
-            clearTimeout(wmHideTimeout);
-            clearTimeout(wmShowTimeout);
-            showWatermark();
-        }
-    }
-    document.addEventListener('fullscreenchange', onFsChangeWatermark);
-    document.addEventListener('webkitfullscreenchange', onFsChangeWatermark);
-    document.addEventListener('mozfullscreenchange', onFsChangeWatermark);
-    window.addEventListener('resize', function() {
-        if (isWmActive) { applyResponsiveStyle(); positionWatermark(); }
-    });
-
-    showWatermark();
     </script>
 </body>
 </html>
