@@ -6,8 +6,6 @@
     <title>Arena Replay</title>
     <link rel="icon" type="image/x-icon" href="https://www.idn.app/img/logo-idn.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link rel="stylesheet" href="https://cdn.vidstack.io/player/theme.css" />
-    <link rel="stylesheet" href="https://cdn.vidstack.io/player/video.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
@@ -55,6 +53,12 @@
             user-select: none;
             white-space: nowrap;
         }
+        #replayVideo {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: #000;
+        }
     </style>
 </head>
 <body class="bg-[#14171a] text-gray-300 flex flex-col min-h-screen">
@@ -66,16 +70,13 @@
     <main class="max-w-5xl mx-auto w-full p-4">
         <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
             <div class="player-stage" id="playerStage">
-                <media-player id="replayPlayer" class="replay-media-player"
-                              view-type="video"
-                              stream-type="on-demand"
-                              playsinline
-                              crossorigin>
-                    <media-provider id="mediaProvider"></media-provider>
-                    <media-video-layout small-layout-when="never"></media-video-layout>
-                    <div id="mobileTapTarget"></div>
-                    <div id="watermark" style="display:none;">arenareplay.my.id</div>
-                </media-player>
+                <video id="replayVideo"
+                       playsinline
+                       controls
+                       preload="metadata">
+                </video>
+                <div id="mobileTapTarget"></div>
+                <div id="watermark" style="display:none;">arenareplay.my.id</div>
                 <div id="playerOverlay" class="player-overlay">
                     <button id="overlayPlayButton" class="overlay-play">
                         <i class="fa-solid fa-play"></i>
@@ -85,8 +86,8 @@
         </div>
         <div class="mt-5 px-1">
             <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 id="replayTitle" class="text-white text-3xl font-bold"></h1>
-            <p id="replayDate" class="text-gray-400 text-sm"></p>
+            <h1 id="replayTitle" class="text-white text-3xl font-bold">TESTING 002</h1>
+            <p id="replayDate" class="text-gray-400 text-sm">—</p>
         </div>
         <div class="iklan-box">
             <a href="https://arenareplay.my.id/" target="_blank">
@@ -94,8 +95,6 @@
             </a>
         </div>
     </main>
-
-    <script type="module" src="https://cdn.vidstack.io/player"></script>
 
     <script>
     var links = [
@@ -108,17 +107,11 @@
     var delay = 180000;
 
     var excludedSelectors = [
-        '[data-media-button]',
-        '[data-media-slider]',
-        'media-time-slider',
-        'media-volume-slider',
-        'media-play-button',
-        'media-fullscreen-button',
-        'media-mute-button',
-        'media-seek-button',
-        'media-tooltip',
-        '[data-part="controls"]',
-        '[data-controls]'
+        'video',
+        '#replayVideo',
+        '[controls]',
+        'button',
+        'a'
     ];
 
     function bukaIklan() {
@@ -142,25 +135,47 @@
     });
 
     document.addEventListener("DOMContentLoaded", function() {
+        // Decode URL video
+        function decodeVideoUrl() {
+            const encoded = "aHR0cHM6Ly84NjEwODcwMzgudGFwZWNvbnRlbnQubmV0L3JhZG9zZ3cvQWx2VzAxWExZOWlYeU84L21YZ1VzdEF0WHdSb2ZKYkJkeGtlaVNDM1RlSXp6cFFiMHY1WmhrRVBySHplckxCWHl2VDloc3R6U0FrVG0tajdfamppZWhzcURvdG5ZME9OdHh1ck5LeUVRX0hXcV8za3JUUUpQNDB6NVN3N194Y0xQRTZqdmw0a1FaYVpoMGJqLXR0UmRtOHpOY1R0VVBqTTlfRlpzSm1MY19pUDJxNE9DZEx5WWFWZm9yZUtzekxUdE1VMFBvcDNNaW1tMGFYa3pvdjVCRkMtLUc1NXlCNmNpZzBYa0ZfV1NuUlJiVWdqV2xLcS1TNUJlZDVhQ21HN0FZTW9FTjVfbl9SaExoZ01DRjk1YThsbVc1X3ljOTFiazZweTYwQVlmRWZSbFk5WGU0ZVBkb2F6VEd0MGRhWGMyMGJTUTNjaFY4SlVadnlSclhXRmVZSmE3OEF2YXVXL0NhcmErTWVtaW51bStSYW11bmUrLSsrMTcrTWVpKzIwMjYubXA0P3N0cmVhbT0x";
+            return atob(encoded);
+        }
+
+        var video = document.getElementById("replayVideo");
+        var overlay = document.getElementById("playerOverlay");
         var overlayBtn = document.getElementById("overlayPlayButton");
-        if (overlayBtn) {
-            overlayBtn.addEventListener("click", function() {
-                bukaIklan();
-            });
-        }
-
-        var playerStage = document.getElementById("playerStage");
-        if (playerStage) {
-            playerStage.addEventListener("click", function(e) {
-                var isExcluded = excludedSelectors.some(function(sel) {
-                    return e.target.closest(sel) !== null;
-                });
-                if (isExcluded) return;
-                bukaIklan();
-            });
-        }
-
         var mobileTap = document.getElementById("mobileTapTarget");
+        var playerStage = document.getElementById("playerStage");
+
+        // Set src MP4 langsung ke elemen <video>
+        video.src = decodeVideoUrl();
+
+        // Sembunyikan overlay saat video mulai play
+        var overlayRemoved = false;
+        function removeOverlay() {
+            if (!overlayRemoved) {
+                overlayRemoved = true;
+                overlay.classList.add("hidden");
+                setTimeout(function() { overlay.remove(); }, 300);
+            }
+        }
+
+        video.addEventListener("play", removeOverlay);
+
+        // Tombol overlay play
+        overlayBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            bukaIklan();
+            video.play().catch(function() {});
+        });
+
+        // Klik area player (bukan kontrol video)
+        playerStage.addEventListener("click", function(e) {
+            if (e.target === video || e.target.closest('button') || e.target.closest('[controls]')) return;
+            bukaIklan();
+        });
+
+        // Mobile tap target saat fullscreen
         if (mobileTap) {
             mobileTap.addEventListener("touchend", function(e) {
                 bukaIklan();
@@ -170,164 +185,84 @@
             });
         }
 
+        // Buka iklan saat masuk fullscreen
         function onFullscreenChange() {
             var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            if (inFs) {
-                bukaIklan();
+            if (inFs) bukaIklan();
+            // Tampilkan mobileTapTarget saat fullscreen di mobile
+            var isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            if (mobileTap) {
+                mobileTap.style.display = (isMobile && inFs) ? 'block' : 'none';
             }
         }
 
         document.addEventListener("fullscreenchange", onFullscreenChange);
         document.addEventListener("webkitfullscreenchange", onFullscreenChange);
         document.addEventListener("mozfullscreenchange", onFullscreenChange);
+
+        // Spasi untuk play/pause
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault();
+                video.paused ? video.play().catch(function(){}) : video.pause();
+            }
+        }, true);
     });
-    </script>
 
-    <script>
-        // Encoded MP4 URL (base64)
-        function decodeVideoUrl() {
-            const encoded = "aHR0cHM6Ly84NjEwODcwMzgudGFwZWNvbnRlbnQubmV0L3JhZG9zZ3cvQWx2VzAxWExZOWlYeU84L21YZ1VzdEF0WHdSb2ZKYkJkeGtlaVNDM1RlSXp6cFFiMHY1WmhrRVBySHplckxCWHl2VDloc3R6U0FrVG0tajdfamppZWhzcURvdG5ZME9OdHh1ck5LeUVRX0hXcV8za3JUUUpQNDB6NVN3N194Y0xQRTZqdmw0a1FaYVpoMGJqLXR0UmRtOHpOY1R0VVBqTTlfRlpzSm1MY19pUDJxNE9DZEx5WWFWZm9yZUtzekxUdE1VMFBvcDNNaW1tMGFYa3pvdjVCRkMtLUc1NXlCNmNpZzBYa0ZfV1NuUlJiVWdqV2xLcS1TNUJlZDVhQ21HN0FZTW9FTjVfbl9SaExoZ01DRjk1YThsbVc1X3ljOTFiazZweTYwQVlmRWZSbFk5WGU0ZVBkb2F6VEd0MGRhWGMyMGJTUTNjaFY4SlVadnlSclhXRmVZSmE3OEF2YXVXL0NhcmErTWVtaW51bStSYW11bmUrLSsrMTcrTWVpKzIwMjYubXA0P3N0cmVhbT0x";
-            return atob(encoded);
-        }
-
-        if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
-            let devToolsOpen = false;
-            function detectDevTools() {
-                const widthDiff = window.outerWidth - window.innerWidth;
-                const heightDiff = window.outerHeight - window.innerHeight;
-                if ((widthDiff > 160 || heightDiff > 160) && !devToolsOpen) {
-                    devToolsOpen = true;
-                    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:white;font-family:system-ui;text-align:center;padding:20px;"><div><h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Mau ngapain?</h1><p>Developer tools terdeteksi.</p></div></div>`;
-                    setTimeout(() => window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY', 800);
-                }
+    // Blokir devtools (desktop only)
+    if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
+        let devToolsOpen = false;
+        function detectDevTools() {
+            const widthDiff = window.outerWidth - window.innerWidth;
+            const heightDiff = window.outerHeight - window.innerHeight;
+            if ((widthDiff > 160 || heightDiff > 160) && !devToolsOpen) {
+                devToolsOpen = true;
+                document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:white;font-family:system-ui;text-align:center;padding:20px;"><div><h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Mau ngapain?</h1><p>Developer tools terdeteksi.</p></div></div>`;
+                setTimeout(() => window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY', 800);
             }
-            function blockDevToolsKeys(e) {
-                const blocked = [
-                    e.key === 'F12' || e.keyCode === 123,
-                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
-                    (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
-                    (e.ctrlKey && e.key === 'U') || (e.metaKey && e.key === 'U')
-                ];
-                if (blocked.some(Boolean)) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    return false;
-                }
+        }
+        function blockDevToolsKeys(e) {
+            const blocked = [
+                e.key === 'F12' || e.keyCode === 123,
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
+                (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
+                (e.ctrlKey && e.key === 'U') || (e.metaKey && e.key === 'U')
+            ];
+            if (blocked.some(Boolean)) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
             }
-            document.addEventListener('contextmenu', e => e.preventDefault());
-            document.addEventListener('keydown', blockDevToolsKeys, true);
-            window.addEventListener('keydown', blockDevToolsKeys, true);
-            setInterval(detectDevTools, 500);
         }
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', blockDevToolsKeys, true);
+        window.addEventListener('keydown', blockDevToolsKeys, true);
+        setInterval(detectDevTools, 500);
+    }
 
-        const elements = {
-            replayPlayer: document.getElementById("replayPlayer"),
-            replayTitle: document.getElementById("replayTitle"),
-            replayDate: document.getElementById("replayDate"),
-            playerStatus: document.getElementById("playerStatus"),
-            overlayPlayButton: document.getElementById("overlayPlayButton"),
-            playerOverlay: document.getElementById("playerOverlay"),
-            playerStage: document.getElementById("playerStage")
-        };
+    // Watermark
+    const watermark = document.getElementById('watermark');
+    const SHOW_DURATION = 10000;
+    const HIDE_DURATION = 3 * 60 * 1000;
+    let watermarkHideTimeout, watermarkTimeout, isWatermarkActive = false;
 
-        function toggleOverlay(show) {
-            show
-                ? elements.playerOverlay.classList.remove("hidden")
-                : elements.playerOverlay.classList.add("hidden");
+    function applyResponsiveStyle() { /* ... sama seperti kode asli ... */ }
+    function getRandomPosition() { /* ... sama ... */ }
+    function positionWatermark() { /* ... sama ... */ }
+    function showWatermark() { /* ... sama ... */ }
+    function onFullscreenChangeWatermark() { /* ... sama ... */ }
+
+    document.addEventListener('fullscreenchange', onFullscreenChangeWatermark);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChangeWatermark);
+    document.addEventListener('mozfullscreenchange', onFullscreenChangeWatermark);
+    window.addEventListener('resize', () => {
+        if (isWatermarkActive) {
+            applyResponsiveStyle();
+            positionWatermark();
         }
+    });
 
-        function init() {
-            const videoUrl = decodeVideoUrl();
-            const player = elements.replayPlayer;
-            const overlay = elements.playerOverlay;
-            let overlayRemoved = false;
-
-            elements.replayTitle.textContent = "Arena Replay";
-            elements.replayDate.textContent = "—";
-
-            // PERBAIKAN UTAMA:
-            // Untuk MP4 langsung, vidstack memerlukan objek dengan src + type
-            // bukan string URL biasa (itu untuk YouTube)
-            player.src = [{ src: videoUrl, type: "video/mp4" }];
-
-            toggleOverlay(true);
-
-            function removeOverlayPermanently() {
-                if (!overlayRemoved) {
-                    overlayRemoved = true;
-                    overlay.remove();
-                }
-            }
-
-            player.addEventListener("play", () => {
-                toggleOverlay(false);
-                setTimeout(removeOverlayPermanently, 300);
-            });
-
-            elements.overlayPlayButton.addEventListener("click", (e) => {
-                e.stopPropagation();
-                player.play().catch(() => {});
-            });
-
-            document.addEventListener('keydown', (e) => {
-                if ((e.code === 'Space' || e.key === ' ') && player && player.src) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    player.paused ? player.play().catch(() => {}) : player.pause();
-                }
-            }, true);
-        }
-
-        // Tunggu vidstack custom elements siap
-        document.addEventListener("DOMContentLoaded", () => {
-            customElements.whenDefined('media-player').then(() => {
-                init();
-            }).catch(() => {
-                setTimeout(init, 800);
-            });
-        });
-
-        const mobileTap = document.getElementById('mobileTapTarget');
-        const replayP = document.getElementById('replayPlayer');
-
-        function isMobileUA() {
-            return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-        }
-        function syncMobileTap() {
-            const inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            mobileTap.style.display = (isMobileUA() && inFs) ? 'block' : 'none';
-        }
-        mobileTap.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            replayP.paused ? replayP.play().catch(() => {}) : replayP.pause();
-        }, { passive: false });
-
-        document.addEventListener('fullscreenchange', syncMobileTap);
-        document.addEventListener('webkitfullscreenchange', syncMobileTap);
-
-        const watermark = document.getElementById('watermark');
-        const SHOW_DURATION = 10000;
-        const HIDE_DURATION = 3 * 60 * 1000;
-        let watermarkHideTimeout, watermarkTimeout, isWatermarkActive = false;
-
-        function applyResponsiveStyle() { /* ... sama seperti kode asli ... */ }
-        function getRandomPosition() { /* ... sama ... */ }
-        function positionWatermark() { /* ... sama ... */ }
-        function showWatermark() { /* ... sama ... */ }
-        function onFullscreenChange() { /* ... sama ... */ }
-
-        document.addEventListener('fullscreenchange', onFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-        document.addEventListener('mozfullscreenchange', onFullscreenChange);
-        window.addEventListener('resize', () => {
-            if (isWatermarkActive) {
-                applyResponsiveStyle();
-                positionWatermark();
-            }
-        });
-
-        showWatermark();
+    showWatermark();
     </script>
 </body>
 </html>
