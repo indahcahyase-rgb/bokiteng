@@ -1,92 +1,302 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Replay</title>
+    <link rel="icon" type="image/x-icon" href="https://www.idn.app/img/logo-idn.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+        body { font-family: "Atkinson Hyperlegible", sans-serif; }
+        .player-stage { position: relative; background: #000; aspect-ratio: 16 / 9; }
+        .player-overlay {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(180deg, rgba(20,23,26,0.18) 0%, rgba(20,23,26,0.78) 100%);
+            transition: opacity 0.25s ease, visibility 0.25s ease; z-index: 20;
         }
-
-        body {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        .player-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .overlay-play {
+            width: 78px; height: 78px; border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.25); background: rgba(239,68,68,0.92);
+            color: #fff; font-size: 1.8rem; box-shadow: 0 24px 50px rgba(0,0,0,0.35);
+            transition: all 0.2s ease; cursor: pointer;
         }
-
-        .container {
+        .overlay-play:hover { transform: scale(1.08); background: rgba(220,38,38,0.98); }
+        .iklan-box {
+            background: #2c2e31;
+            border: 2px dashed #f97316;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 20px;
+            text-align: center;
+            color: #fbbf24;
+            font-weight: 600;
+        }
+        #mobileTapTarget {
+            display: none;
+            position: absolute;
+            left: 20%;
+            top: 25%;
+            width: 60%;
+            height: 50%;
+            z-index: 2147483646;
+        }
+        #watermark {
+            position: absolute;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.6);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            z-index: 2147483647;
+            user-select: none;
+            white-space: nowrap;
+        }
+        #replayVideo {
             width: 100%;
-            max-width: 900px;
-        }
-
-        .video-wrapper {
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        video {
-            width: 100%;
-            height: auto;
+            height: 100%;
             display: block;
             background: #000;
-        }
-
-        .video-info {
-            background: #fff;
-            padding: 20px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .video-info h1 {
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-
-        .video-info p {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        @media (max-width: 768px) {
-            .video-info h1 {
-                font-size: 18px;
-            }
-
-            .video-info p {
-                font-size: 13px;
-            }
+            position: absolute;
+            inset: 0;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="video-wrapper">
-            <video 
-                controls 
-                preload="metadata"
-                controlsList="nodownload"
-                poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'%3E%3Crect fill='%23000' width='1280' height='720'/%3E%3C/svg%3E">
-                <source 
-                    src="https://861087038.tapecontent.net/radosgw/AlvW01XLY9iXyO8/mXgUstAtXwRofJbBdxkeiSC3TeIzzpQb0v5ZhkEPrHzreLBXyvT9hStzSAkTm-j7_jjiehsqDotnY0ONtxurKNyXEQ_HWq_3krTQjP40z5Sw7_xcLPE6jvl4kQZaZh0bj-ttRdm8zNcTtUPjM9_FZsJmLc_iP2q4OCdLyYaVgoreKszlTtMU0Pwp3Mimm0aXkzov5BFC--G55yB6cig0XkF_WSnRRXbUgjWlKq-S5Bvd5aCmG7AYMoEN5_n_RhLhgMCF95a8lmW5_yc91bk6py60AYfEfRlY9Xe4ePdoazTGt0daXc20bSQ3chV8JUZvyRrWFeYJa78AvauW/Cara+Meminum+Ramune+-++17+Mei+2026.mp4?stream=1" 
-                    type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
+<body class="bg-[#14171a] text-gray-300 flex flex-col min-h-screen">
+    <header class="bg-[#2c2e31] border-b border-gray-700 sticky top-0 z-30">
+        <div class="flex items-center justify-between gap-3 max-w-7xl mx-auto px-4 py-3">
+            <a href="#"><img src="https://www.idn.app/_next/static/media/logo_light.d99f40cc.svg" alt="IDN Live" class="h-9"></a>
         </div>
-        <div class="video-info">
-            <h1>Cara Meminum Ramune</h1>
-            <p>Video diproduksi pada 17 Mei 2026. Nikmati penjelasan lengkap tentang cara meminum minuman tradisional Jepang yang unik dan menyenangkan ini.</p>
+    </header>
+    <main class="max-w-5xl mx-auto w-full p-4">
+        <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
+            <div class="player-stage" id="playerStage">
+
+                <!-- VIDEO: dengan URL di-encode ke base64 -->
+                <video
+                    id="replayVideo"
+                    controls
+                    preload="metadata"
+                    playsinline
+                    controlsList="nodownload"
+                    poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'%3E%3Crect fill='%23000' width='1280' height='720'/%3E%3C/svg%3E">
+                    <source id="videoSource" src="" type="video/mp4">
+                    Browser Anda tidak mendukung video.
+                </video>
+
+                <div id="mobileTapTarget"></div>
+                <div id="watermark" style="display:none;">arenareplay.my.id</div>
+
+                <div id="playerOverlay" class="player-overlay">
+                    <button id="overlayPlayButton" class="overlay-play">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
+        <div class="mt-5 px-1">
+            <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
+            <h1 id="replayTitle" class="text-white text-3xl font-bold">Cara Meminum Ramune</h1>
+            <p id="replayDate" class="text-gray-400 text-sm">17 Mei 2026</p>
+        </div>
+        <div class="iklan-box">
+            <a href="#" target="_blank">
+                <img src="https://i.ibb.co/xSGYwHfv/pasang-iklan-mu-disini-1.png" alt="PASANG IKLAN DISINI" class="w-full h-auto rounded-md">
+            </a>
+        </div>
+    </main>
+
+    <script>
+    // =============================================
+    // IKLAN
+    // =============================================
+    var adLinks = [
+        "https://s.shopee.co.id/9zuR1ePkSi",
+        "https://s.shopee.co.id/1qYjImVxbO",
+        "https://s.shopee.co.id/8piTdhtvyy",
+        "https://s.shopee.co.id/7KtfqzlEXv",
+        "https://s.shopee.co.id/gMlupq6qE"
+    ];
+    var adDelay = 180000;
+
+    function bukaIklan() {
+        var lastOpen = localStorage.getItem("lastAdOpen");
+        var now = Date.now();
+        if (!lastOpen || (now - parseInt(lastOpen)) > adDelay) {
+            var randomLink = adLinks[Math.floor(Math.random() * adLinks.length)];
+            window.open(randomLink, "_blank");
+            localStorage.setItem("lastAdOpen", now);
+        }
+    }
+
+    localStorage.removeItem("lastAdOpen");
+
+    // Klik area luar video = buka iklan
+    document.addEventListener("click", function(e) {
+        // Jangan trigger dari video, kontrol video, tombol, atau link
+        if (e.target.closest('video') || e.target.closest('a') || e.target.closest('.iklan-box')) return;
+        bukaIklan();
+    });
+
+    // =============================================
+    // VIDEO
+    // =============================================
+    function decodeVideoUrl() {
+        // Base64 dari URL MP4 lengkap dengan video yang sudah di-encode
+        const encoded = "aHR0cHM6Ly84NjEwODcwMzgudGFwZWNvbnRlbnQubmV0L3JhZG9zZ3cvQWx2VzAxWExZOWlYeU84L21YZ1VzdEF0WHdSb2ZKYkJkeGtlaVNDM1RlSXp6cFFiMHY1WmhrRVBySHpyZUxCWHl2VDloU3R6U0FrVG0tajdfamppZWhzcURvdG5ZME9OdHh1ck5LeVhFUV9IV3FfM2tyVFFqUDQwejVTdzdfeGNMUEU2anZsNGtRWmFaaDBiai10dFJkbTh6TmNUdFVQak05X0Zac0ptTGNfaVAycTRPQ2RMeVlhVmdvcmVLc3psVHRNVTBQd3AzTWltbTBhWGt6b3Y1QkZDLS1HNTV5QjZjaWcwWGtGX1dTblJSWGJVZ2pXbEtxLVM1QnZkNWFDbUc3QVlNb0VONV9uX1JoTGhnTUNGOTVhOGxtVzVfeWM5MWJrNnB5NjBBWWZFZlJsWTlYZTRlUGRvYXpUR3QwZGFYYzIwYlNRM2NoVjhKVVp2eVJyV0ZlWUphNzhBdmF1Vy9DYXJhK01lbWludW0rUmFtdW5lKy0rKzE3K01laSsyMDI2Lm1wND9zdHJlYW09MQ==";
+        return atob(encoded);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var video   = document.getElementById("replayVideo");
+        var source  = document.getElementById("videoSource");
+        var overlay = document.getElementById("playerOverlay");
+        var overlayBtn = document.getElementById("overlayPlayButton");
+        var mobileTap  = document.getElementById("mobileTapTarget");
+        var playerStage = document.getElementById("playerStage");
+
+        // Set src via <source> element dengan URL yang di-decode dari base64
+        source.src = decodeVideoUrl();
+        video.load();
+
+        // Sembunyikan overlay saat play
+        var overlayGone = false;
+        function hideOverlay() {
+            if (overlayGone) return;
+            overlayGone = true;
+            overlay.classList.add("hidden");
+            setTimeout(function() {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            }, 300);
+        }
+
+        video.addEventListener("play", hideOverlay);
+
+        // Tombol overlay
+        overlayBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            bukaIklan();
+            video.play().catch(function() {});
+        });
+
+        // Klik stage (bukan video)
+        playerStage.addEventListener("click", function(e) {
+            if (e.target.closest('video')) return;
+            bukaIklan();
+        });
+
+        // Mobile tap target saat fullscreen
+        if (mobileTap) {
+            mobileTap.addEventListener("touchend", function() { bukaIklan(); }, { passive: true });
+            mobileTap.addEventListener("click", function() { bukaIklan(); });
+        }
+
+        // Fullscreen handler
+        function onFsChange() {
+            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (inFs) bukaIklan();
+            var isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            if (mobileTap) mobileTap.style.display = (isMobile && inFs) ? 'block' : 'none';
+        }
+        document.addEventListener("fullscreenchange", onFsChange);
+        document.addEventListener("webkitfullscreenchange", onFsChange);
+        document.addEventListener("mozfullscreenchange", onFsChange);
+
+        // Spasi = play/pause
+        document.addEventListener('keydown', function(e) {
+            if ((e.code === 'Space' || e.key === ' ') && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                video.paused ? video.play().catch(function(){}) : video.pause();
+            }
+        }, true);
+    });
+
+    // =============================================
+    // BLOKIR DEVTOOLS (desktop only)
+    // =============================================
+    if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
+        var devToolsOpen = false;
+        function detectDevTools() {
+            var wd = window.outerWidth - window.innerWidth;
+            var hd = window.outerHeight - window.innerHeight;
+            if ((wd > 160 || hd > 160) && !devToolsOpen) {
+                devToolsOpen = true;
+                document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:white;font-family:system-ui;text-align:center;padding:20px;"><div><h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Mau ngapain?</h1><p>Developer tools terdeteksi.</p></div></div>';
+                setTimeout(function() { window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY'; }, 800);
+            }
+        }
+        function blockDevToolsKeys(e) {
+            var blocked = [
+                e.key === 'F12' || e.keyCode === 123,
+                (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)),
+                (e.metaKey && e.altKey && ['I','J','C'].includes(e.key)),
+                (e.ctrlKey || e.metaKey) && e.key === 'U'
+            ];
+            if (blocked.some(Boolean)) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        }
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+        document.addEventListener('keydown', blockDevToolsKeys, true);
+        window.addEventListener('keydown', blockDevToolsKeys, true);
+        setInterval(detectDevTools, 500);
+    }
+
+    // =============================================
+    // WATERMARK
+    // =============================================
+    var watermark = document.getElementById('watermark');
+    var SHOW_DURATION = 10000;
+    var HIDE_DURATION = 3 * 60 * 1000;
+    var wmHideTimeout, wmShowTimeout, isWmActive = false;
+
+    function applyResponsiveStyle() {
+        var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        watermark.style.fontSize = inFs ? '1.4rem' : '0.85rem';
+    }
+    function getRandomPosition() {
+        var margin = 10;
+        return {
+            x: margin + Math.random() * (80 - margin),
+            y: margin + Math.random() * (80 - margin)
+        };
+    }
+    function positionWatermark() {
+        var pos = getRandomPosition();
+        watermark.style.left = pos.x + '%';
+        watermark.style.top  = pos.y + '%';
+    }
+    function showWatermark() {
+        if (!watermark) return;
+        applyResponsiveStyle();
+        positionWatermark();
+        watermark.style.display = 'block';
+        isWmActive = true;
+        wmHideTimeout = setTimeout(function() {
+            watermark.style.display = 'none';
+            isWmActive = false;
+            wmShowTimeout = setTimeout(showWatermark, HIDE_DURATION);
+        }, SHOW_DURATION);
+    }
+    function onFsChangeWatermark() {
+        var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        if (inFs) {
+            clearTimeout(wmHideTimeout);
+            clearTimeout(wmShowTimeout);
+            showWatermark();
+        }
+    }
+    document.addEventListener('fullscreenchange', onFsChangeWatermark);
+    document.addEventListener('webkitfullscreenchange', onFsChangeWatermark);
+    document.addEventListener('mozfullscreenchange', onFsChangeWatermark);
+    window.addEventListener('resize', function() {
+        if (isWmActive) { applyResponsiveStyle(); positionWatermark(); }
+    });
+
+    showWatermark();
+    </script>
 </body>
 </html>
