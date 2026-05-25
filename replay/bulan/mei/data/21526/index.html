@@ -76,7 +76,7 @@
 
         <div class="mt-5 px-1">
             <p class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 class="text-white text-3xl font-bold">DREAM BAKUDAN - 21 Mei 2026</h1>
+            <h1 class="text-white text-3xl font-bold">Dream Bakudan - 21 Mei 2026</h1>
             <p class="text-gray-400 text-sm"></p>
         </div>
 
@@ -123,15 +123,6 @@
         bukaIklan();
     });
 
- 
-    function decodeOtp() {
-    return atob("MjAxNjAzMTN2ZXJzQVNFMzIzMlRXMk9SS2ZtejllNjlxQnZ4ZXRWVEFNM2RzWWRoZDYyTDF6ZnNWdTBmMEZvQw==");
-}
-function decodePlaybackInfo() {
-    return atob("ZXlKMmFXUmxiMGxrSWpvaVltSmpNRE0yTlRnM04yUmhORE5sWWpobE5qQTVPVFk1TlRFM1lURTBaVEFpZlE9PQ==");
-}
-
-
     document.addEventListener("DOMContentLoaded", function() {
         var overlayBtn = document.getElementById("overlayPlayButton");
         var playerOverlay = document.getElementById("playerOverlay");
@@ -141,12 +132,9 @@ function decodePlaybackInfo() {
             e.stopPropagation();
             bukaIklan();
 
-            var otp = decodeOtp();
-            var playbackInfo = decodePlaybackInfo();
-
             var iframe = document.createElement("iframe");
-            iframe.src = "https://player.vdocipher.com/v2/?otp=" + otp + "&playbackInfo=" + playbackInfo;
-            iframe.allow = "encrypted-media";
+            iframe.src = "https://mega.nz/embed/SlpXFQjJ#rSolZD8yWSlShGyXba2bm07vYigC4PWImLSOfZlV2Ic";
+            iframe.allow = "autoplay; fullscreen";
             iframe.setAttribute("allowfullscreen", "true");
             iframe.style.cssText = "width:100%;height:100%;border:0;";
 
@@ -168,7 +156,6 @@ function decodePlaybackInfo() {
         document.addEventListener("webkitfullscreenchange", onFullscreenChange);
         document.addEventListener("mozfullscreenchange", onFullscreenChange);
     });
-
 
     if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
         let devToolsOpen = false;
