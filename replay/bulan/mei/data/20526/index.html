@@ -123,15 +123,6 @@
         bukaIklan();
     });
 
- 
-    function decodeOtp() {
-    return atob("MjAxNjAzMTN2ZXJzQVNFMzIzMjZLU1ZMcDV4d3V4YnFORlVDWFBYakJWNUp6WldxdVBjSDZPVXRwa0ZIcXBOUQ==");
-}
-function decodePlaybackInfo() {
-    return atob("ZXlKMmFXUmxiMGxrSWpvaVpEWXhOalEzWXpVek1EaGlOREJoWkdFMk5qZG1PV1ZsWXpSbE1XWTRabVlpZlE9PQ==");
-}
-
-
     document.addEventListener("DOMContentLoaded", function() {
         var overlayBtn = document.getElementById("overlayPlayButton");
         var playerOverlay = document.getElementById("playerOverlay");
@@ -141,12 +132,9 @@ function decodePlaybackInfo() {
             e.stopPropagation();
             bukaIklan();
 
-            var otp = decodeOtp();
-            var playbackInfo = decodePlaybackInfo();
-
             var iframe = document.createElement("iframe");
-            iframe.src = "https://player.vdocipher.com/v2/?otp=" + otp + "&playbackInfo=" + playbackInfo;
-            iframe.allow = "encrypted-media";
+            iframe.src = "https://mega.nz/embed/mtBWgIbD#cqnoLmfsYAOeibh57PfJGiffcKmou1f9BXc979v9haQ";
+            iframe.allow = "autoplay; fullscreen";
             iframe.setAttribute("allowfullscreen", "true");
             iframe.style.cssText = "width:100%;height:100%;border:0;";
 
@@ -168,7 +156,6 @@ function decodePlaybackInfo() {
         document.addEventListener("webkitfullscreenchange", onFullscreenChange);
         document.addEventListener("mozfullscreenchange", onFullscreenChange);
     });
-
 
     if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
         let devToolsOpen = false;
