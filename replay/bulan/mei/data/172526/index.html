@@ -76,7 +76,7 @@
 
         <div class="mt-5 px-1">
             <p class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 class="text-white text-3xl font-bold">PASSION 200% - 17 Mei 2026</h1>
+            <h1 class="text-white text-3xl font-bold">Passion 200% - 17 Mei 2026</h1>
             <p class="text-gray-400 text-sm"></p>
         </div>
 
@@ -123,15 +123,6 @@
         bukaIklan();
     });
 
- 
-    function decodeOtp() {
-    return atob("MjAxNjAzMTN2ZXJzQVNFMzIzMkZUQUJsaVZ6OGZ2TmZ5NWRYOGs5cTBGbnVYcXdZSEwzRVlMc1ZiNDd6dGFXaw==");
-}
-function decodePlaybackInfo() {
-    return atob("ZXlKMmFXUmxiMGxrSWpvaVlqUTFaR00wTW1FMU5qQmlORE5sWkdKa1l6aGxZMlV5TkdZek5UVXhZak1pZlE9PQ==");
-}
-
-
     document.addEventListener("DOMContentLoaded", function() {
         var overlayBtn = document.getElementById("overlayPlayButton");
         var playerOverlay = document.getElementById("playerOverlay");
@@ -141,12 +132,9 @@ function decodePlaybackInfo() {
             e.stopPropagation();
             bukaIklan();
 
-            var otp = decodeOtp();
-            var playbackInfo = decodePlaybackInfo();
-
             var iframe = document.createElement("iframe");
-            iframe.src = "https://player.vdocipher.com/v2/?otp=" + otp + "&playbackInfo=" + playbackInfo;
-            iframe.allow = "encrypted-media";
+            iframe.src = "https://mega.nz/embed/KpxS3LLC#9WuEX8gsb8MgIsRj6llVvlzkNG5Sk5-7E7DsMAG9ak8";
+            iframe.allow = "autoplay; fullscreen";
             iframe.setAttribute("allowfullscreen", "true");
             iframe.style.cssText = "width:100%;height:100%;border:0;";
 
@@ -168,7 +156,6 @@ function decodePlaybackInfo() {
         document.addEventListener("webkitfullscreenchange", onFullscreenChange);
         document.addEventListener("mozfullscreenchange", onFullscreenChange);
     });
-
 
     if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
         let devToolsOpen = false;
