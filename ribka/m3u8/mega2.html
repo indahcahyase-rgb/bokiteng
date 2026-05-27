@@ -10,12 +10,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
         body { font-family: "Atkinson Hyperlegible", sans-serif; }
-        .player-stage { position: relative; background: #000; aspect-ratio: 16 / 9; }
+        .player-stage { position: relative; background: #000; aspect-ratio: 16 / 9; overflow: hidden; }
         .player-overlay {
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
             background: linear-gradient(180deg, rgba(20,23,26,0.18) 0%, rgba(20,23,26,0.78) 100%);
             transition: opacity 0.25s ease, visibility 0.25s ease;
-            z-index: 30; /* lebih tinggi dari shield */
+            z-index: 30;
         }
         .player-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .overlay-play {
@@ -42,14 +42,12 @@
             height: 100%;
             border: none;
             z-index: 10;
-            display: none;
         }
-        /* Shield aktif SETELAH overlay hilang, z-index 20 (di atas iframe, bawah overlay) */
+        /* Shield selalu aktif di atas iframe, bawah overlay */
         #iframeShield {
             position: absolute;
             inset: 0;
             z-index: 20;
-            display: none;
             cursor: default;
         }
         #watermark {
@@ -73,20 +71,21 @@
     <main class="max-w-5xl mx-auto w-full p-4">
         <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
             <div class="player-stage" id="playerStage">
+                <!-- iframe Mega selalu ada, shield selalu di atasnya -->
                 <iframe
                     id="megaFrame"
-                    src=""
+                    src="https://mega.nz/embed/OpplxSjL#p4fI72zhnu3u285-4gMCSOYUY8AdWbsuaBblzTtG-IM"
                     allowfullscreen
                     allow="autoplay; fullscreen"
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
                 ></iframe>
 
-                <!-- Shield aktif setelah overlay hilang -->
+                <!-- Shield transparan permanen di atas iframe -->
                 <div id="iframeShield"></div>
 
                 <div id="watermark" style="display:none;">arenareplay.my.id</div>
 
-                <!-- Overlay tombol play — z-index tertinggi, tampil di awal -->
+                <!-- Overlay tombol play, z-index tertinggi -->
                 <div id="playerOverlay" class="player-overlay">
                     <button id="overlayPlayButton" class="overlay-play">
                         <i class="fa-solid fa-play"></i>
@@ -96,7 +95,7 @@
         </div>
         <div class="mt-5 px-1">
             <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 id="replayTitle" class="text-white text-3xl font-bold">Arena Replay 22</h1>
+            <h1 id="replayTitle" class="text-white text-3xl font-bold">Arena Replay</h1>
             <p id="replayDate" class="text-gray-400 text-sm">—</p>
         </div>
         <div class="iklan-box">
@@ -151,13 +150,6 @@
     });
 
     document.addEventListener("DOMContentLoaded", function() {
-        var overlayBtn = document.getElementById("overlayPlayButton");
-        if (overlayBtn) {
-            overlayBtn.addEventListener("click", function() {
-                bukaIklan();
-            });
-        }
-
         var playerStage = document.getElementById("playerStage");
         if (playerStage) {
             playerStage.addEventListener("click", function(e) {
@@ -210,42 +202,42 @@
             setInterval(detectDevTools, 500);
         }
 
-        const MEGA_URL = "https://mega.nz/embed/mtBWgIbD#cqnoLmfsYAOeibh57PfJGiffcKmou1f9BXc979v9haQ";
-
-        const elements = {
-            overlayPlayButton: document.getElementById("overlayPlayButton"),
-            playerOverlay: document.getElementById("playerOverlay"),
-            megaFrame: document.getElementById("megaFrame"),
-            iframeShield: document.getElementById("iframeShield")
-        };
+        const overlayPlayButton = document.getElementById("overlayPlayButton");
+        const playerOverlay = document.getElementById("playerOverlay");
+        const megaFrame = document.getElementById("megaFrame");
 
         function toggleOverlay(show) {
             show
-                ? elements.playerOverlay.classList.remove("hidden")
-                : elements.playerOverlay.classList.add("hidden");
+                ? playerOverlay.classList.remove("hidden")
+                : playerOverlay.classList.add("hidden");
         }
 
         function init() {
             toggleOverlay(true);
 
-            const overlay = elements.playerOverlay;
             let overlayRemoved = false;
 
-            function removeOverlayPermanently() {
-                if (!overlayRemoved) {
-                    overlayRemoved = true;
-                    overlay.remove();
-                    // Aktifkan shield SETELAH overlay dihapus
-                    elements.iframeShield.style.display = "block";
-                }
-            }
-
-            elements.overlayPlayButton.addEventListener("click", function(e) {
+            overlayPlayButton.addEventListener("click", function(e) {
                 e.stopPropagation();
-                elements.megaFrame.src = MEGA_URL;
-                elements.megaFrame.style.display = "block";
+
+                // Sembunyikan overlay dulu
                 toggleOverlay(false);
-                setTimeout(removeOverlayPermanently, 300);
+
+                // Kirim perintah play ke iframe Mega via postMessage
+                try {
+                    megaFrame.contentWindow.postMessage({ type: "play" }, "*");
+                } catch(err) {}
+
+                // Hapus overlay dari DOM setelah transisi
+                setTimeout(() => {
+                    if (!overlayRemoved) {
+                        overlayRemoved = true;
+                        playerOverlay.remove();
+                    }
+                }, 300);
+
+                // Buka iklan
+                bukaIklan();
             });
         }
 
