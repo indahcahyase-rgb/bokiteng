@@ -59,17 +59,15 @@
             z-index: 10;
         }
 
-        #iframeShield, #bottomShield {
+        #topShield {
             position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 18%;           /* Sesuaikan jika perlu (15-20% biasanya cukup) */
             z-index: 25;
             background: transparent;
-        }
-        #iframeShield { inset: 0; }
-        #bottomShield { 
-            bottom: 0; 
-            left: 0; 
-            right: 0; 
-            height: 25%; /* melindungi area kontrol player */
+            pointer-events: auto;
         }
 
         #watermark {
@@ -102,8 +100,7 @@
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
                 ></iframe>
                 
-                <div id="iframeShield"></div>
-                <div id="bottomShield"></div>
+                <div id="topShield"></div>
                 
                 <div id="watermark" style="display:none;">arenareplay.my.id</div>
                 
@@ -117,7 +114,7 @@
 
         <div class="mt-5 px-1">
             <p class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 class="text-white text-3xl font-bold">Arena Replay xz</h1>
+            <h1 class="text-white text-3xl font-bold">Arena Replay</h1>
             <p class="text-gray-400 text-sm">—</p>
         </div>
 
@@ -154,31 +151,25 @@
             const overlayPlayButton = document.getElementById("overlayPlayButton");
             const playerOverlay = document.getElementById("playerOverlay");
             const megaFrame = document.getElementById("megaFrame");
-            const iframeShield = document.getElementById("iframeShield");
-            const bottomShield = document.getElementById("bottomShield");
+            const topShield = document.getElementById("topShield");
 
             overlayPlayButton.addEventListener("click", function(e) {
                 e.stopPropagation();
 
                 playerOverlay.classList.add("hidden");
 
-                // Nonaktifkan shield utama
-                iframeShield.style.pointerEvents = "none";
-                bottomShield.style.pointerEvents = "none";
-
-                // Hapus shield setelah video mulai
+                // Nonaktifkan top shield setelah beberapa saat
                 setTimeout(() => {
-                    if (iframeShield) iframeShield.remove();
-                    if (bottomShield) bottomShield.remove();
-                }, 2500);
+                    if (topShield) topShield.remove();
+                }, 2800);
 
                 megaFrame.focus();
 
-                // Klik di posisi lebih aman (tengah video, bukan bawah)
+                // Klik di area tengah video (aman)
                 setTimeout(() => {
                     const rect = megaFrame.getBoundingClientRect();
                     const cx = rect.left + rect.width / 2;
-                    const cy = rect.top + rect.height * 0.38; // 38% dari atas = area aman
+                    const cy = rect.top + rect.height * 0.42;   // Area tengah atas video
 
                     const clickEvent = new MouseEvent("click", {
                         bubbles: true,
@@ -188,7 +179,7 @@
                         clientY: cy
                     });
                     megaFrame.dispatchEvent(clickEvent);
-                }, 700);
+                }, 750);
 
                 adReady = true;
                 bukaIklan();
@@ -208,7 +199,7 @@
             });
         });
 
-        // Watermark (tetap sama)
+        // ==================== WATERMARK ====================
         const watermark = document.getElementById('watermark');
         const SHOW_DURATION = 10000;
         const HIDE_DURATION = 3 * 60 * 1000;
