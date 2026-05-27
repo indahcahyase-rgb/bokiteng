@@ -14,7 +14,8 @@
         .player-overlay {
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
             background: linear-gradient(180deg, rgba(20,23,26,0.18) 0%, rgba(20,23,26,0.78) 100%);
-            transition: opacity 0.25s ease, visibility 0.25s ease; z-index: 20;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            z-index: 30; /* lebih tinggi dari shield */
         }
         .player-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .overlay-play {
@@ -43,11 +44,11 @@
             z-index: 10;
             display: none;
         }
-        /* Perisai transparan di atas iframe agar klik tidak langsung ke Mega */
+        /* Shield aktif SETELAH overlay hilang, z-index 20 (di atas iframe, bawah overlay) */
         #iframeShield {
             position: absolute;
             inset: 0;
-            z-index: 15;
+            z-index: 20;
             display: none;
             cursor: default;
         }
@@ -72,7 +73,6 @@
     <main class="max-w-5xl mx-auto w-full p-4">
         <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
             <div class="player-stage" id="playerStage">
-                <!-- Mega.nz iframe -->
                 <iframe
                     id="megaFrame"
                     src=""
@@ -81,12 +81,12 @@
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
                 ></iframe>
 
-                <!-- Perisai transparan di atas iframe (aktif setelah play) -->
+                <!-- Shield aktif setelah overlay hilang -->
                 <div id="iframeShield"></div>
 
                 <div id="watermark" style="display:none;">arenareplay.my.id</div>
 
-                <!-- Overlay tombol play merah (tampil di awal) -->
+                <!-- Overlay tombol play — z-index tertinggi, tampil di awal -->
                 <div id="playerOverlay" class="player-overlay">
                     <button id="overlayPlayButton" class="overlay-play">
                         <i class="fa-solid fa-play"></i>
@@ -96,7 +96,7 @@
         </div>
         <div class="mt-5 px-1">
             <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 id="replayTitle" class="text-white text-3xl font-bold">Arena Replay</h1>
+            <h1 id="replayTitle" class="text-white text-3xl font-bold">Arena Replay 22</h1>
             <p id="replayDate" class="text-gray-400 text-sm">—</p>
         </div>
         <div class="iklan-box">
@@ -210,7 +210,7 @@
             setInterval(detectDevTools, 500);
         }
 
-        const MEGA_URL = "https://mega.nz/embed/mtBWgIbD#cqnoLmfsYAOeibh57PfJGiffcKmou1f9BXc979v9haQ";
+        const MEGA_URL = "https://mega.nz/embed/OpplxSjL#p4fI72zhnu3u285-4gMCSOYUY8AdWbsuaBblzTtG-IM";
 
         const elements = {
             overlayPlayButton: document.getElementById("overlayPlayButton"),
@@ -235,16 +235,15 @@
                 if (!overlayRemoved) {
                     overlayRemoved = true;
                     overlay.remove();
+                    // Aktifkan shield SETELAH overlay dihapus
+                    elements.iframeShield.style.display = "block";
                 }
             }
 
             elements.overlayPlayButton.addEventListener("click", function(e) {
                 e.stopPropagation();
-                // Tampilkan iframe Mega
                 elements.megaFrame.src = MEGA_URL;
                 elements.megaFrame.style.display = "block";
-                // Aktifkan perisai transparan agar klik tidak langsung ke iframe
-                elements.iframeShield.style.display = "block";
                 toggleOverlay(false);
                 setTimeout(removeOverlayPermanently, 300);
             });
