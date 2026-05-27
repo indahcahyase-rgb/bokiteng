@@ -19,66 +19,44 @@
         }
         
         .player-overlay {
-            position: absolute; 
-            inset: 0; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
+            position: absolute; inset: 0; 
+            display: flex; align-items: center; justify-content: center;
             background: linear-gradient(180deg, rgba(20,23,26,0.18) 0%, rgba(20,23,26,0.78) 100%);
-            transition: opacity 0.25s ease, visibility 0.25s ease;
+            transition: opacity 0.25s ease;
             z-index: 30;
         }
-        .player-overlay.hidden { 
-            opacity: 0; 
-            visibility: hidden; 
-            pointer-events: none; 
-        }
+        .player-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         
         .overlay-play {
-            width: 78px; height: 78px; 
-            border-radius: 999px;
+            width: 78px; height: 78px; border-radius: 999px;
             border: 1px solid rgba(255,255,255,0.25); 
             background: rgba(239,68,68,0.92);
-            color: #fff; 
-            font-size: 1.8rem; 
+            color: #fff; font-size: 1.8rem; 
             box-shadow: 0 24px 50px rgba(0,0,0,0.35);
-            transition: all 0.2s ease; 
-            cursor: pointer;
+            transition: all 0.2s ease; cursor: pointer;
         }
-        .overlay-play:hover { 
-            transform: scale(1.08); 
-            background: rgba(220,38,38,0.98); 
-        }
+        .overlay-play:hover { transform: scale(1.08); background: rgba(220,38,38,0.98); }
 
         #megaFrame {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            z-index: 10;
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            border: none; z-index: 10;
         }
 
         #topShield {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 18%;           /* Sesuaikan jika perlu (15-20% biasanya cukup) */
-            z-index: 25;
-            background: transparent;
-            pointer-events: auto;
+            position: absolute; top: 0; left: 0; right: 0; height: 25%;
+            z-index: 35; background: transparent; pointer-events: auto;
         }
 
-        #watermark {
-            position: absolute;
-            font-weight: bold;
-            color: rgba(255, 255, 255, 0.6);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            pointer-events: none;
-            z-index: 2147483647;
-            user-select: none;
-            white-space: nowrap;
+        .server-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .server-btn.active {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
         }
     </style>
 </head>
@@ -93,7 +71,7 @@
         <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
             <div class="player-stage" id="playerStage">
                 <iframe
-                    id="megaFrame"
+                    id="videoFrame"
                     src="https://mega.nz/embed/mtBWgIbD#cqnoLmfsYAOeibh57PfJGiffcKmou1f9BXc979v9haQ"
                     allowfullscreen
                     allow="autoplay; fullscreen"
@@ -112,13 +90,19 @@
             </div>
         </div>
 
+        <!-- Server Selection -->
+        <div class="mt-4 flex flex-wrap gap-3 justify-center">
+            <button onclick="switchServer(1)" id="server1" class="server-btn active bg-gray-800 border border-gray-600 hover:bg-gray-700">Server 1 - Mega</button>
+            <button onclick="switchServer(2)" id="server2" class="server-btn bg-gray-800 border border-gray-600 hover:bg-gray-700">Server 2 - YouTube</button>
+            <button onclick="switchServer(3)" id="server3" class="server-btn bg-gray-800 border border-gray-600 hover:bg-gray-700">Server 3</button>
+        </div>
+
         <div class="mt-5 px-1">
             <p class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
             <h1 class="text-white text-3xl font-bold">Arena Replay</h1>
-            <p class="text-gray-400 text-sm">—</p>
         </div>
 
-        <div class="iklan-box">
+        <div class="iklan-box mt-6">
             <a href="https://arenareplay.my.id/" target="_blank">
                 <img src="https://i.ibb.co/xSGYwHfv/pasang-iklan-mu-disini-1.png" alt="PASANG IKLAN DISINI" class="w-full h-auto rounded-md">
             </a>
@@ -126,50 +110,66 @@
     </main>
 
     <script>
-        var adLinks = [
-            "https://s.shopee.co.id/9zuR1ePkSi",
-            "https://s.shopee.co.id/1qYjImVxbO",
-            "https://s.shopee.co.id/8piTdhtvyy",
-            "https://s.shopee.co.id/7KtfqzlEXv",
-            "https://s.shopee.co.id/gMlupq6qE"
-        ];
-        var adDelay = 180000;
-        var adReady = false;
+        const videoFrame = document.getElementById("videoFrame");
+        const topShield = document.getElementById("topShield");
+        const playerOverlay = document.getElementById("playerOverlay");
+        let currentServer = 1;
 
-        function bukaIklan() {
-            if (!adReady) return;
-            var lastOpen = localStorage.getItem("lastAdOpen");
-            var now = Date.now();
-            if (!lastOpen || (now - parseInt(lastOpen)) > adDelay) {
-                var randomLink = adLinks[Math.floor(Math.random() * adLinks.length)];
-                window.open(randomLink, "_blank");
-                localStorage.setItem("lastAdOpen", now);
+        const servers = {
+            1: {
+                url: "https://mega.nz/embed/mtBWgIbD#cqnoLmfsYAOeibh57PfJGiffcKmou1f9BXc979v9haQ",
+                name: "Mega"
+            },
+            2: {
+                url: "https://www.youtube.com/embed/VWrbEmtqf4Y",
+                name: "YouTube"
+            },
+            3: {
+                url: "https://abc.com/embed-placeholder",  // Ganti dengan embed URL Server 3 nanti
+                name: "Server 3"
+            }
+        };
+
+        function switchServer(serverNum) {
+            if (currentServer === serverNum) return;
+
+            currentServer = serverNum;
+            
+            // Update active button
+            document.querySelectorAll('.server-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.id === `server${serverNum}`) btn.classList.add('active');
+            });
+
+            // Ganti src iframe
+            videoFrame.src = servers[serverNum].url;
+
+            // Reset overlay & shield
+            playerOverlay.classList.remove("hidden");
+            if (topShield) {
+                topShield.style.pointerEvents = "auto";
             }
         }
 
+        // Tombol Play Overlay
         function init() {
             const overlayPlayButton = document.getElementById("overlayPlayButton");
-            const playerOverlay = document.getElementById("playerOverlay");
-            const megaFrame = document.getElementById("megaFrame");
-            const topShield = document.getElementById("topShield");
 
             overlayPlayButton.addEventListener("click", function(e) {
                 e.stopPropagation();
-
                 playerOverlay.classList.add("hidden");
 
-                // Nonaktifkan top shield setelah beberapa saat
+                // Nonaktifkan shield
                 setTimeout(() => {
                     if (topShield) topShield.remove();
-                }, 2800);
+                }, 3500);
 
-                megaFrame.focus();
+                videoFrame.focus();
 
-                // Klik di area tengah video (aman)
                 setTimeout(() => {
-                    const rect = megaFrame.getBoundingClientRect();
+                    const rect = videoFrame.getBoundingClientRect();
                     const cx = rect.left + rect.width / 2;
-                    const cy = rect.top + rect.height * 0.42;   // Area tengah atas video
+                    const cy = rect.top + rect.height * 0.40;
 
                     const clickEvent = new MouseEvent("click", {
                         bubbles: true,
@@ -178,28 +178,16 @@
                         clientX: cx,
                         clientY: cy
                     });
-                    megaFrame.dispatchEvent(clickEvent);
-                }, 750);
-
-                adReady = true;
-                bukaIklan();
-
-                setTimeout(() => {
-                    if (playerOverlay) playerOverlay.remove();
-                }, 600);
+                    videoFrame.dispatchEvent(clickEvent);
+                }, 800);
             });
         }
 
         document.addEventListener("DOMContentLoaded", function() {
             init();
-
-            document.addEventListener("click", function(e) {
-                if (e.target.closest("#overlayPlayButton")) return;
-                bukaIklan();
-            });
         });
 
-        // ==================== WATERMARK ====================
+        // Watermark (tetap sama)
         const watermark = document.getElementById('watermark');
         const SHOW_DURATION = 10000;
         const HIDE_DURATION = 3 * 60 * 1000;
