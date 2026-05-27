@@ -81,7 +81,7 @@
         </div>
         <div class="mt-5 px-1">
             <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 id="replayTitle" class="text-white text-3xl font-bold">TES 1</h1>
+            <h1 id="replayTitle" class="text-white text-3xl font-bold">TES2</h1>
             <p id="replayDate" class="text-gray-400 text-sm">—</p>
         </div>
         <div class="iklan-box">
@@ -165,11 +165,6 @@
     </script>
 
     <script>
-        function getMegaEmbedUrl() {
-            const encoded = "aHR0cHM6Ly9tZWdhLm56L2VtYmVkL09wcGx4U2pMI3A0Zkk3MnpobnUzMjg1LTRnTUNTT1VZOEFkV2JzdWFCYmxaVHRHLUlN";
-            return atob(encoded);
-        }
-
         if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
             let devToolsOpen = false;
             function detectDevTools() {
@@ -200,6 +195,8 @@
             setInterval(detectDevTools, 500);
         }
 
+        const MEGA_URL = "https://mega.nz/embed/OpplxSjL#p4fI72zhnu3u285-4gMCSOYUY8AdWbsuaBblzTtG-IM";
+
         const elements = {
             overlayPlayButton: document.getElementById("overlayPlayButton"),
             playerOverlay: document.getElementById("playerOverlay"),
@@ -227,7 +224,7 @@
 
             elements.overlayPlayButton.addEventListener("click", function(e) {
                 e.stopPropagation();
-                elements.megaFrame.src = getMegaEmbedUrl();
+                elements.megaFrame.src = MEGA_URL;
                 elements.megaFrame.style.display = "block";
                 toggleOverlay(false);
                 setTimeout(removeOverlayPermanently, 300);
