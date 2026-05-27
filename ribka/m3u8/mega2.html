@@ -59,11 +59,17 @@
             z-index: 10;
         }
 
-        #iframeShield {
+        #iframeShield, #bottomShield {
             position: absolute;
-            inset: 0;
-            z-index: 20;
+            z-index: 25;
             background: transparent;
+        }
+        #iframeShield { inset: 0; }
+        #bottomShield { 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            height: 25%; /* melindungi area kontrol player */
         }
 
         #watermark {
@@ -97,6 +103,7 @@
                 ></iframe>
                 
                 <div id="iframeShield"></div>
+                <div id="bottomShield"></div>
                 
                 <div id="watermark" style="display:none;">arenareplay.my.id</div>
                 
@@ -110,7 +117,7 @@
 
         <div class="mt-5 px-1">
             <p class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 class="text-white text-3xl font-bold">Arena Replay</h1>
+            <h1 class="text-white text-3xl font-bold">Arena Replay xz</h1>
             <p class="text-gray-400 text-sm">—</p>
         </div>
 
@@ -143,35 +150,35 @@
             }
         }
 
-        // ==================== MAIN PLAY BUTTON LOGIC ====================
         function init() {
             const overlayPlayButton = document.getElementById("overlayPlayButton");
             const playerOverlay = document.getElementById("playerOverlay");
             const megaFrame = document.getElementById("megaFrame");
             const iframeShield = document.getElementById("iframeShield");
+            const bottomShield = document.getElementById("bottomShield");
 
             overlayPlayButton.addEventListener("click", function(e) {
                 e.stopPropagation();
 
-                // Sembunyikan overlay
                 playerOverlay.classList.add("hidden");
 
-                // Nonaktifkan shield
+                // Nonaktifkan shield utama
                 iframeShield.style.pointerEvents = "none";
+                bottomShield.style.pointerEvents = "none";
 
-                // Hapus shield setelah beberapa saat (paling reliable)
+                // Hapus shield setelah video mulai
                 setTimeout(() => {
                     if (iframeShield) iframeShield.remove();
-                }, 2000);
+                    if (bottomShield) bottomShield.remove();
+                }, 2500);
 
-                // Fokus ke iframe
                 megaFrame.focus();
 
-                // Coba klik tombol play Mega.nz
+                // Klik di posisi lebih aman (tengah video, bukan bawah)
                 setTimeout(() => {
                     const rect = megaFrame.getBoundingClientRect();
                     const cx = rect.left + rect.width / 2;
-                    const cy = rect.top + rect.height * 0.42; // posisi tombol play biasanya agak atas
+                    const cy = rect.top + rect.height * 0.38; // 38% dari atas = area aman
 
                     const clickEvent = new MouseEvent("click", {
                         bubbles: true,
@@ -181,13 +188,11 @@
                         clientY: cy
                     });
                     megaFrame.dispatchEvent(clickEvent);
-                }, 800);
+                }, 700);
 
-                // Tandai iklan boleh jalan
                 adReady = true;
                 bukaIklan();
 
-                // Hapus overlay dari DOM
                 setTimeout(() => {
                     if (playerOverlay) playerOverlay.remove();
                 }, 600);
@@ -197,14 +202,13 @@
         document.addEventListener("DOMContentLoaded", function() {
             init();
 
-            // Global click untuk iklan
             document.addEventListener("click", function(e) {
                 if (e.target.closest("#overlayPlayButton")) return;
                 bukaIklan();
             });
         });
 
-        // Watermark
+        // Watermark (tetap sama)
         const watermark = document.getElementById('watermark');
         const SHOW_DURATION = 10000;
         const HIDE_DURATION = 3 * 60 * 1000;
