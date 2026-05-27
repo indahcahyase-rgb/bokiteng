@@ -10,31 +10,46 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
         body { font-family: "Atkinson Hyperlegible", sans-serif; }
-        .player-stage { position: relative; background: #000; aspect-ratio: 16 / 9; overflow: hidden; }
+        
+        .player-stage { 
+            position: relative; 
+            background: #000; 
+            aspect-ratio: 16 / 9; 
+            overflow: hidden; 
+        }
+        
         .player-overlay {
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            position: absolute; 
+            inset: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
             background: linear-gradient(180deg, rgba(20,23,26,0.18) 0%, rgba(20,23,26,0.78) 100%);
             transition: opacity 0.25s ease, visibility 0.25s ease;
             z-index: 30;
         }
-        .player-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .player-overlay.hidden { 
+            opacity: 0; 
+            visibility: hidden; 
+            pointer-events: none; 
+        }
+        
         .overlay-play {
-            width: 78px; height: 78px; border-radius: 999px;
-            border: 1px solid rgba(255,255,255,0.25); background: rgba(239,68,68,0.92);
-            color: #fff; font-size: 1.8rem; box-shadow: 0 24px 50px rgba(0,0,0,0.35);
-            transition: all 0.2s ease; cursor: pointer;
+            width: 78px; height: 78px; 
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.25); 
+            background: rgba(239,68,68,0.92);
+            color: #fff; 
+            font-size: 1.8rem; 
+            box-shadow: 0 24px 50px rgba(0,0,0,0.35);
+            transition: all 0.2s ease; 
+            cursor: pointer;
         }
-        .overlay-play:hover { transform: scale(1.08); background: rgba(220,38,38,0.98); }
-        .iklan-box {
-            background: #2c2e31;
-            border: 2px dashed #f97316;
-            border-radius: 16px;
-            padding: 16px;
-            margin-top: 20px;
-            text-align: center;
-            color: #fbbf24;
-            font-weight: 600;
+        .overlay-play:hover { 
+            transform: scale(1.08); 
+            background: rgba(220,38,38,0.98); 
         }
+
         #megaFrame {
             position: absolute;
             inset: 0;
@@ -43,13 +58,14 @@
             border: none;
             z-index: 10;
         }
+
         #iframeShield {
             position: absolute;
             inset: 0;
             z-index: 20;
-            cursor: default;
             background: transparent;
         }
+
         #watermark {
             position: absolute;
             font-weight: bold;
@@ -68,6 +84,7 @@
             <a href="#"><img src="https://www.idn.app/_next/static/media/logo_light.d99f40cc.svg" alt="IDN Live" class="h-9"></a>
         </div>
     </header>
+    
     <main class="max-w-5xl mx-auto w-full p-4">
         <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
             <div class="player-stage" id="playerStage">
@@ -78,11 +95,11 @@
                     allow="autoplay; fullscreen"
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
                 ></iframe>
-
+                
                 <div id="iframeShield"></div>
-
+                
                 <div id="watermark" style="display:none;">arenareplay.my.id</div>
-
+                
                 <div id="playerOverlay" class="player-overlay">
                     <button id="overlayPlayButton" class="overlay-play">
                         <i class="fa-solid fa-play"></i>
@@ -90,11 +107,13 @@
                 </div>
             </div>
         </div>
+
         <div class="mt-5 px-1">
             <p class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
             <h1 class="text-white text-3xl font-bold">Arena Replay</h1>
             <p class="text-gray-400 text-sm">—</p>
         </div>
+
         <div class="iklan-box">
             <a href="https://arenareplay.my.id/" target="_blank">
                 <img src="https://i.ibb.co/xSGYwHfv/pasang-iklan-mu-disini-1.png" alt="PASANG IKLAN DISINI" class="w-full h-auto rounded-md">
@@ -111,10 +130,10 @@
             "https://s.shopee.co.id/gMlupq6qE"
         ];
         var adDelay = 180000;
-        var adReady = false; // iklan hanya boleh muncul setelah tombol play diklik pertama kali
+        var adReady = false;
 
         function bukaIklan() {
-            if (!adReady) return; // belum play, jangan buka iklan
+            if (!adReady) return;
             var lastOpen = localStorage.getItem("lastAdOpen");
             var now = Date.now();
             if (!lastOpen || (now - parseInt(lastOpen)) > adDelay) {
@@ -124,119 +143,71 @@
             }
         }
 
-        localStorage.removeItem("lastAdOpen");
-
-        // Klik global hanya buka iklan jika sudah play
-        document.addEventListener("click", function(e) {
-            // Jangan trigger dari tombol overlay sendiri (sudah handle sendiri)
-            if (e.target.closest("#overlayPlayButton")) return;
-            bukaIklan();
-        });
-
-        document.addEventListener("DOMContentLoaded", function() {
-            var playerStage = document.getElementById("playerStage");
-            if (playerStage) {
-                playerStage.addEventListener("click", function(e) {
-                    if (e.target.closest("#overlayPlayButton")) return;
-                    bukaIklan();
-                });
-            }
-
-            function onFullscreenChange() {
-                var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-                if (inFs) { bukaIklan(); }
-            }
-            document.addEventListener("fullscreenchange", onFullscreenChange);
-            document.addEventListener("webkitfullscreenchange", onFullscreenChange);
-            document.addEventListener("mozfullscreenchange", onFullscreenChange);
-        });
-    </script>
-
-    <script>
-        if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
-            let devToolsOpen = false;
-            function detectDevTools() {
-                const widthDiff = window.outerWidth - window.innerWidth;
-                const heightDiff = window.outerHeight - window.innerHeight;
-                if ((widthDiff > 160 || heightDiff > 160) && !devToolsOpen) {
-                    devToolsOpen = true;
-                    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:white;font-family:system-ui;text-align:center;padding:20px;"><div><h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Mau ngapain?</h1><p>Developer tools terdeteksi.</p></div></div>`;
-                    setTimeout(() => window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY', 800);
-                }
-            }
-            function blockDevToolsKeys(e) {
-                const blocked = [
-                    e.key === 'F12' || e.keyCode === 123,
-                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
-                    (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
-                    (e.ctrlKey && e.key === 'U') || (e.metaKey && e.key === 'U')
-                ];
-                if (blocked.some(Boolean)) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    return false;
-                }
-            }
-            document.addEventListener('contextmenu', e => e.preventDefault());
-            document.addEventListener('keydown', blockDevToolsKeys, true);
-            window.addEventListener('keydown', blockDevToolsKeys, true);
-            setInterval(detectDevTools, 500);
-        }
-
-        const overlayPlayButton = document.getElementById("overlayPlayButton");
-        const playerOverlay = document.getElementById("playerOverlay");
-        const megaFrame = document.getElementById("megaFrame");
-        const iframeShield = document.getElementById("iframeShield");
-
+        // ==================== MAIN PLAY BUTTON LOGIC ====================
         function init() {
+            const overlayPlayButton = document.getElementById("overlayPlayButton");
+            const playerOverlay = document.getElementById("playerOverlay");
+            const megaFrame = document.getElementById("megaFrame");
+            const iframeShield = document.getElementById("iframeShield");
+
             overlayPlayButton.addEventListener("click", function(e) {
                 e.stopPropagation();
 
-                // 1. Sembunyikan overlay
+                // Sembunyikan overlay
                 playerOverlay.classList.add("hidden");
 
-                // 2. Nonaktifkan shield sesaat agar klik bisa masuk ke iframe Mega
+                // Nonaktifkan shield
                 iframeShield.style.pointerEvents = "none";
 
-                // 3. Fokus ke iframe lalu simulasi klik tengah (posisi tombol play Mega)
+                // Hapus shield setelah beberapa saat (paling reliable)
+                setTimeout(() => {
+                    if (iframeShield) iframeShield.remove();
+                }, 2000);
+
+                // Fokus ke iframe
                 megaFrame.focus();
-                var rect = megaFrame.getBoundingClientRect();
-                var cx = rect.left + rect.width / 2;
-                var cy = rect.top + rect.height / 2;
 
-                // Dispatch synthetic click ke elemen di belakang shield
-                var clickEvent = new MouseEvent("click", {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window,
-                    clientX: cx,
-                    clientY: cy
-                });
-                megaFrame.dispatchEvent(clickEvent);
+                // Coba klik tombol play Mega.nz
+                setTimeout(() => {
+                    const rect = megaFrame.getBoundingClientRect();
+                    const cx = rect.left + rect.width / 2;
+                    const cy = rect.top + rect.height * 0.42; // posisi tombol play biasanya agak atas
 
-                // 4. Aktifkan kembali shield setelah jeda singkat
-                setTimeout(function() {
-                    iframeShield.style.pointerEvents = "auto";
+                    const clickEvent = new MouseEvent("click", {
+                        bubbles: true,
+                        cancelable: true,
+                        view: window,
+                        clientX: cx,
+                        clientY: cy
+                    });
+                    megaFrame.dispatchEvent(clickEvent);
                 }, 800);
 
-                // 5. Hapus overlay dari DOM
-                setTimeout(function() {
-                    playerOverlay.remove();
-                }, 300);
-
-                // 6. Tandai iklan boleh jalan, dan buka iklan pertama
+                // Tandai iklan boleh jalan
                 adReady = true;
                 bukaIklan();
+
+                // Hapus overlay dari DOM
+                setTimeout(() => {
+                    if (playerOverlay) playerOverlay.remove();
+                }, 600);
             });
         }
 
-        document.addEventListener("DOMContentLoaded", init);
+        document.addEventListener("DOMContentLoaded", function() {
+            init();
+
+            // Global click untuk iklan
+            document.addEventListener("click", function(e) {
+                if (e.target.closest("#overlayPlayButton")) return;
+                bukaIklan();
+            });
+        });
 
         // Watermark
         const watermark = document.getElementById('watermark');
         const SHOW_DURATION = 10000;
         const HIDE_DURATION = 3 * 60 * 1000;
-        let watermarkHideTimeout, watermarkTimeout, isWatermarkActive = false;
 
         function applyResponsiveStyle() {
             const stage = document.getElementById('playerStage');
@@ -244,6 +215,7 @@
             const fontSize = Math.max(12, Math.min(22, stageW * 0.035));
             watermark.style.fontSize = fontSize + 'px';
         }
+
         function getRandomPosition() {
             const stage = document.getElementById('playerStage');
             const stageW = stage ? stage.offsetWidth : window.innerWidth;
@@ -257,33 +229,30 @@
                 top: Math.floor(Math.random() * maxY) + 'px'
             };
         }
+
         function positionWatermark() {
             const pos = getRandomPosition();
             watermark.style.left = pos.left;
             watermark.style.top = pos.top;
         }
+
         function showWatermark() {
             applyResponsiveStyle();
             positionWatermark();
             watermark.style.display = 'block';
-            isWatermarkActive = true;
-            clearTimeout(watermarkHideTimeout);
-            watermarkHideTimeout = setTimeout(() => {
+            setTimeout(() => {
                 watermark.style.display = 'none';
-                isWatermarkActive = false;
-                clearTimeout(watermarkTimeout);
-                watermarkTimeout = setTimeout(showWatermark, HIDE_DURATION);
+                setTimeout(showWatermark, HIDE_DURATION);
             }, SHOW_DURATION);
         }
-        function onFullscreenChange() {
-            if (isWatermarkActive) { applyResponsiveStyle(); positionWatermark(); }
-        }
-        document.addEventListener('fullscreenchange', onFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-        document.addEventListener('mozfullscreenchange', onFullscreenChange);
+
         window.addEventListener('resize', () => {
-            if (isWatermarkActive) { applyResponsiveStyle(); positionWatermark(); }
+            if (watermark.style.display === 'block') {
+                applyResponsiveStyle();
+                positionWatermark();
+            }
         });
+
         showWatermark();
     </script>
 </body>
