@@ -64,7 +64,6 @@
     <main class="max-w-5xl mx-auto w-full p-4">
         <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
             <div class="player-stage" id="playerStage">
-                <!-- Mega.nz iframe embed -->
                 <iframe
                     id="megaFrame"
                     src=""
@@ -72,9 +71,7 @@
                     allow="autoplay; fullscreen"
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
                 ></iframe>
-
                 <div id="watermark" style="display:none;">arenareplay.my.id</div>
-
                 <div id="playerOverlay" class="player-overlay">
                     <button id="overlayPlayButton" class="overlay-play">
                         <i class="fa-solid fa-play"></i>
@@ -84,7 +81,7 @@
         </div>
         <div class="mt-5 px-1">
             <p id="playerStatus" class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
-            <h1 id="replayTitle" class="text-white text-3xl font-bold">Arena Replay</h1>
+            <h1 id="replayTitle" class="text-white text-3xl font-bold">TES 1</h1>
             <p id="replayDate" class="text-gray-400 text-sm">—</p>
         </div>
         <div class="iklan-box">
@@ -139,7 +136,6 @@
     });
 
     document.addEventListener("DOMContentLoaded", function() {
-
         var overlayBtn = document.getElementById("overlayPlayButton");
         if (overlayBtn) {
             overlayBtn.addEventListener("click", function() {
@@ -160,11 +156,8 @@
 
         function onFullscreenChange() {
             var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            if (inFs) {
-                bukaIklan();
-            }
+            if (inFs) { bukaIklan(); }
         }
-
         document.addEventListener("fullscreenchange", onFullscreenChange);
         document.addEventListener("webkitfullscreenchange", onFullscreenChange);
         document.addEventListener("mozfullscreenchange", onFullscreenChange);
@@ -173,10 +166,8 @@
 
     <script>
         function getMegaEmbedUrl() {
-            // Encoded Mega.nz embed URL
-            const encoded = "aHR0cHM6Ly9tZWdhLm56L2VtYmVkL09wcGx4U2pMI3A0Zkk3Mnpobn UzMjg1LTRnTUNTT1VZOEFkV2JzdWFCYmxaVHRHLUlN";
-            // Decode and clean
-            return atob(encoded.replace(/\s/g, ''));
+            const encoded = "aHR0cHM6Ly9tZWdhLm56L2VtYmVkL09wcGx4U2pMI3A0Zkk3MnpobnUzMjg1LTRnTUNTT1VZOEFkV2JzdWFCYmxaVHRHLUlN";
+            return atob(encoded);
         }
 
         if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
@@ -210,12 +201,8 @@
         }
 
         const elements = {
-            replayTitle: document.getElementById("replayTitle"),
-            replayDate: document.getElementById("replayDate"),
-            playerStatus: document.getElementById("playerStatus"),
             overlayPlayButton: document.getElementById("overlayPlayButton"),
             playerOverlay: document.getElementById("playerOverlay"),
-            playerStage: document.getElementById("playerStage"),
             megaFrame: document.getElementById("megaFrame")
         };
 
@@ -225,14 +212,8 @@
                 : elements.playerOverlay.classList.add("hidden");
         }
 
-        function loadReplayIntoPlayer() {
-            elements.replayTitle.textContent = "Arena Replay";
-            elements.replayDate.textContent = "—";
-            toggleOverlay(true);
-        }
-
         function init() {
-            loadReplayIntoPlayer();
+            toggleOverlay(true);
 
             const overlay = elements.playerOverlay;
             let overlayRemoved = false;
@@ -244,21 +225,13 @@
                 }
             }
 
-            // Saat tombol play overlay diklik: tampilkan iframe Mega, sembunyikan overlay
             elements.overlayPlayButton.addEventListener("click", function(e) {
                 e.stopPropagation();
-                // Set src dan tampilkan iframe Mega
                 elements.megaFrame.src = getMegaEmbedUrl();
                 elements.megaFrame.style.display = "block";
                 toggleOverlay(false);
                 setTimeout(removeOverlayPermanently, 300);
             });
-
-            document.addEventListener('keydown', (e) => {
-                if ((e.code === 'Space' || e.key === ' ')) {
-                    // Space tidak bisa mengontrol iframe Mega, biarkan default
-                }
-            }, true);
         }
 
         document.addEventListener("DOMContentLoaded", init);
