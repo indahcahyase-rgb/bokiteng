@@ -53,6 +53,151 @@
             height: 100%;
             border: 0;
         }
+
+        /* Troubleshooting Note */
+        .notice-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: #1e2328;
+            border: 1px solid #374151;
+            border-left: 4px solid #f59e0b;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-top: 16px;
+        }
+        .notice-icon {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            background: rgba(245,158,11,0.12);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f59e0b;
+            font-size: 1rem;
+            margin-top: 1px;
+        }
+        .notice-content { flex: 1; }
+        .notice-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #f59e0b;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .notice-text {
+            font-size: 13.5px;
+            color: #9ca3af;
+            line-height: 1.65;
+            margin: 0;
+        }
+        .notice-steps {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .notice-steps li {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 13.5px;
+            color: #d1d5db;
+            line-height: 1.5;
+        }
+        .step-badge {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(245,158,11,0.18);
+            color: #f59e0b;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1px;
+        }
+        .highlight-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(99,102,241,0.15);
+            border: 1px solid rgba(99,102,241,0.3);
+            color: #a5b4fc;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 1px 8px;
+            border-radius: 99px;
+        }
+
+        /* Social Media Buttons */
+        .sosmed-section {
+            margin-top: 20px;
+        }
+        .sosmed-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+        .sosmed-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .sosmed-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.18s ease;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        .sosmed-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .sosmed-btn:active { transform: translateY(0); }
+
+        .btn-tiktok {
+            background: #111;
+            border-color: #2d2d2d;
+            color: #fff;
+        }
+        .btn-tiktok .icon-wrap {
+            width: 22px; height: 22px;
+            background: #fff;
+            border-radius: 5px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-tiktok .tiktok-icon {
+            width: 14px; height: 14px;
+        }
+
+        .btn-twitter {
+            background: #0f0f0f;
+            border-color: #2d2d2d;
+            color: #fff;
+        }
+        .btn-twitter i { font-size: 15px; color: #fff; }
+
+        .btn-whatsapp {
+            background: #0d1f14;
+            border-color: #1a4d2a;
+            color: #4ade80;
+        }
+        .btn-whatsapp i { font-size: 16px; color: #25d366; }
     </style>
 </head>
 <body class="bg-[#14171a] text-gray-300 flex flex-col min-h-screen">
@@ -78,6 +223,56 @@
             <p class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
             <h1 class="text-white text-3xl font-bold">Pajama Drive - 4 Juni 2026</h1>
             <p class="text-gray-400 text-sm"></p>
+        </div>
+
+        <div class="sosmed-section px-1">
+            <p class="sosmed-label">Ikuti kami di</p>
+            <div class="sosmed-grid">
+                <a href="https://www.tiktok.com/@arenareplay48" target="_blank" class="sosmed-btn btn-tiktok">
+                    <span class="icon-wrap">
+                        <svg class="tiktok-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.72a8.18 8.18 0 0 0 4.78 1.52V6.79a4.85 4.85 0 0 1-1.01-.1z" fill="#000"/>
+                        </svg>
+                    </span>
+                    TikTok
+                </a>
+                <a href="https://x.com/48replay" target="_blank" class="sosmed-btn btn-twitter">
+                    <i class="fa-brands fa-x-twitter"></i>
+                    X / Twitter
+                </a>
+                <a href="https://whatsapp.com/channel/0029VbCuSeJBadmQxnmZE20u" target="_blank" class="sosmed-btn btn-whatsapp">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    Saluran WhatsApp
+                </a>
+            </div>
+        </div>
+
+        <div class="notice-box">
+            <div class="notice-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="notice-content">
+                <div class="notice-title"><i class="fa-solid fa-circle-info" style="margin-right:5px;"></i>Video terkena limit?</div>
+                <p class="notice-text">Jika video tidak bisa diputar atau muncul pesan <em>"Limit IP"</em>, ikuti langkah berikut:</p>
+                <ul class="notice-steps">
+                    <li>
+                        <span class="step-badge">1</span>
+                        <span>Hapus data browser — buka <strong style="color:#e5e7eb;">Pengaturan &rarr; Privasi &rarr; Hapus Data Browsing</strong>, centang <em>Cache</em> &amp; <em>Cookie</em>, lalu hapus.</span>
+                    </li>
+                    <li>
+                        <span class="step-badge">2</span>
+                        <span>
+                            Reset IP menggunakan
+                            <span class="highlight-chip"><i class="fa-solid fa-shield-halved"></i>&nbsp;WARP+ 1.1.1.1</span>
+                            — aktifkan aplikasi Cloudflare 1.1.1.1, matikan lalu nyalakan kembali untuk mendapatkan IP baru.
+                        </span>
+                    </li>
+                    <li>
+                        <span class="step-badge">3</span>
+                        <span>Muat ulang halaman ini dan coba putar kembali.</span>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <div class="iklan-box">
