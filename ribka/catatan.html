@@ -54,6 +54,86 @@
             border: 0;
         }
 
+        /* Quality Selector */
+        .quality-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a1d20;
+            border: 1px solid #2a2d32;
+            border-radius: 14px;
+            padding: 10px 14px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .quality-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #6b7280;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .quality-label i { font-size: 13px; color: #4b5563; }
+        .quality-divider {
+            width: 1px;
+            height: 20px;
+            background: #2a2d32;
+            flex-shrink: 0;
+        }
+        .quality-options {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .q-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 13px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #2e3238;
+            background: #23262b;
+            color: #9ca3af;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .q-btn:hover { background: #2c3038; color: #e5e7eb; border-color: #3d4249; }
+        .q-btn.active {
+            background: #1d2d3e;
+            border-color: #3b82f6;
+            color: #60a5fa;
+        }
+        .q-btn .q-badge {
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 4px;
+            background: rgba(250,204,21,0.15);
+            color: #facc15;
+            border: 1px solid rgba(250,204,21,0.25);
+            letter-spacing: 0.05em;
+        }
+        .q-btn.active .q-badge {
+            background: rgba(59,130,246,0.15);
+            color: #93c5fd;
+            border-color: rgba(59,130,246,0.3);
+        }
+        .q-active-info {
+            margin-left: auto;
+            font-size: 11px;
+            color: #4b5563;
+            white-space: nowrap;
+        }
+        .q-active-info span { color: #60a5fa; font-weight: 700; }
+
         /* Troubleshooting Note */
         .notice-box {
             display: flex;
@@ -138,9 +218,7 @@
         }
 
         /* Social Media Buttons */
-        .sosmed-section {
-            margin-top: 20px;
-        }
+        .sosmed-section { margin-top: 20px; }
         .sosmed-label {
             font-size: 11px;
             font-weight: 700;
@@ -149,11 +227,7 @@
             color: #6b7280;
             margin-bottom: 10px;
         }
-        .sosmed-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .sosmed-grid { display: flex; flex-wrap: wrap; gap: 10px; }
         .sosmed-btn {
             display: inline-flex;
             align-items: center;
@@ -169,34 +243,15 @@
         }
         .sosmed-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
         .sosmed-btn:active { transform: translateY(0); }
-
-        .btn-tiktok {
-            background: #111;
-            border-color: #2d2d2d;
-            color: #fff;
-        }
+        .btn-tiktok { background: #111; border-color: #2d2d2d; color: #fff; }
         .btn-tiktok .icon-wrap {
-            width: 22px; height: 22px;
-            background: #fff;
-            border-radius: 5px;
+            width: 22px; height: 22px; background: #fff; border-radius: 5px;
             display: flex; align-items: center; justify-content: center;
         }
-        .btn-tiktok .tiktok-icon {
-            width: 14px; height: 14px;
-        }
-
-        .btn-twitter {
-            background: #0f0f0f;
-            border-color: #2d2d2d;
-            color: #fff;
-        }
+        .btn-tiktok .tiktok-icon { width: 14px; height: 14px; }
+        .btn-twitter { background: #0f0f0f; border-color: #2d2d2d; color: #fff; }
         .btn-twitter i { font-size: 15px; color: #fff; }
-
-        .btn-whatsapp {
-            background: #0d1f14;
-            border-color: #1a4d2a;
-            color: #4ade80;
-        }
+        .btn-whatsapp { background: #0d1f14; border-color: #1a4d2a; color: #4ade80; }
         .btn-whatsapp i { font-size: 16px; color: #25d366; }
     </style>
 </head>
@@ -217,6 +272,27 @@
                     </button>
                 </div>
             </div>
+        </div>
+
+        <!-- Quality Selector -->
+        <div class="quality-bar">
+            <span class="quality-label">
+                <i class="fa-solid fa-film"></i>
+                Kualitas
+            </span>
+            <div class="quality-divider"></div>
+            <div class="quality-options">
+                <button class="q-btn active" data-src="https://mega.nz/embed/WDZTSaJZ#q0PIgM0S3yegewXOuh9MNCf6Wj8y5o2hDQ27WifwgXs" data-label="720p">
+                    <i class="fa-solid fa-circle-play" style="font-size:11px;"></i>
+                    720p
+                </button>
+                <button class="q-btn" data-src="https://mega.nz/embed/zeoBzDZI#7wuUH9lsaKa7rFE7GG3f5QjO09xjPxTdrxRTwNbEHpM" data-label="1080p HD">
+                    <i class="fa-solid fa-circle-play" style="font-size:11px;"></i>
+                    1080p
+                    <span class="q-badge">HD</span>
+                </button>
+            </div>
+            <div class="q-active-info">Aktif: <span id="activeQLabel">720p</span></div>
         </div>
 
         <div class="mt-5 px-1">
@@ -283,6 +359,12 @@
     </main>
 
     <script>
+    var sources = {
+        "720p": "https://mega.nz/embed/WDZTSaJZ#q0PIgM0S3yegewXOuh9MNCf6Wj8y5o2hDQ27WifwgXs",
+        "1080p HD": "https://mega.nz/embed/zeoBzDZI#7wuUH9lsaKa7rFE7GG3f5QjO09xjPxTdrxRTwNbEHpM"
+    };
+    var activeQuality = "720p";
+
     var links = [
         "https://s.shopee.co.id/9zuR1ePkSi",
         "https://s.shopee.co.id/1qYjImVxbO",
@@ -295,7 +377,9 @@
     var excludedSelectors = [
         '#vdoContainer',
         '#vdoContainer iframe',
-        '#overlayPlayButton'
+        '#overlayPlayButton',
+        '.q-btn',
+        '.quality-bar'
     ];
 
     function bukaIklan() {
@@ -322,13 +406,41 @@
         var overlayBtn = document.getElementById("overlayPlayButton");
         var playerOverlay = document.getElementById("playerOverlay");
         var vdoContainer = document.getElementById("vdoContainer");
+        var activeQLabel = document.getElementById("activeQLabel");
+        var playerActive = false;
+
+        // Quality button logic
+        document.querySelectorAll(".q-btn").forEach(function(btn) {
+            btn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                var label = btn.getAttribute("data-label");
+                var src = btn.getAttribute("data-src");
+                activeQuality = label;
+
+                document.querySelectorAll(".q-btn").forEach(function(b) { b.classList.remove("active"); });
+                btn.classList.add("active");
+                activeQLabel.textContent = label;
+
+                // If player is already running, swap source immediately
+                if (playerActive) {
+                    var iframe = document.createElement("iframe");
+                    iframe.src = src;
+                    iframe.allow = "autoplay; fullscreen";
+                    iframe.setAttribute("allowfullscreen", "true");
+                    iframe.style.cssText = "width:100%;height:100%;border:0;";
+                    vdoContainer.innerHTML = "";
+                    vdoContainer.appendChild(iframe);
+                }
+            });
+        });
 
         overlayBtn.addEventListener("click", function(e) {
             e.stopPropagation();
             bukaIklan();
 
+            var src = sources[activeQuality] || sources["720p"];
             var iframe = document.createElement("iframe");
-            iframe.src = "https://mega.nz/embed/OXhHmRwZ#LvF9XQVbz5bkTW2HtOoOM9TTl3RcR9kA7mQUAVNQmM0";
+            iframe.src = src;
             iframe.allow = "autoplay; fullscreen";
             iframe.setAttribute("allowfullscreen", "true");
             iframe.style.cssText = "width:100%;height:100%;border:0;";
@@ -336,6 +448,7 @@
             vdoContainer.innerHTML = "";
             vdoContainer.appendChild(iframe);
             vdoContainer.style.display = "block";
+            playerActive = true;
 
             playerOverlay.style.opacity = "0";
             playerOverlay.style.visibility = "hidden";
