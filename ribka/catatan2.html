@@ -269,12 +269,14 @@
             display: flex;
             flex-direction: column;
         }
+        /* Permanent transparent overlay - blocks all interaction */
         .live-chat-iframe-wrap::after {
             content: '';
             position: absolute;
             inset: 0;
-            z-index: 5;
+            z-index: 10;
             background: transparent;
+            cursor: default;
         }
         .live-chat-header {
             display: flex;
@@ -454,11 +456,12 @@
                         <div class="live-chat-header">
                             <span class="live-chat-dot"></span>
                             <span><strong>Live Chat</strong> &nbsp;·&nbsp; YouTube</span>
+                            <span style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.08em;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#f87171;padding:2px 8px;border-radius:99px;">READ ONLY</span>
                         </div>
                         <div class="live-chat-iframe-wrap">
                             <iframe
                                 class="live-chat-iframe"
-                                src="https://www.youtube.com/live_chat?is_popout=1&v=goO9FJP4l3g&dark_theme=1"
+                                src="https://www.youtube.com/live_chat?v=goO9FJP4l3g&dark_theme=1"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowfullscreen
                             ></iframe>
@@ -480,11 +483,12 @@
                     <div class="live-chat-header">
                         <span class="live-chat-dot"></span>
                         <span><strong>Live Chat</strong> &nbsp;·&nbsp; YouTube</span>
+                        <span style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.08em;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#f87171;padding:2px 8px;border-radius:99px;">READ ONLY</span>
                     </div>
                     <div class="live-chat-iframe-wrap">
                         <iframe
                             class="live-chat-iframe"
-                            src="https://www.youtube.com/live_chat?is_popout=1&v=goO9FJP4l3g&dark_theme=1"
+                            src="https://www.youtube.com/live_chat?v=goO9FJP4l3g&dark_theme=1"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowfullscreen
                         ></iframe>
