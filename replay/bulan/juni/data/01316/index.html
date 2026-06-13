@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Replay</title>
+    <link rel="icon" type="image/x-icon" href="https://www.idn.app/img/logo-idn.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+        body { font-family: "Atkinson Hyperlegible", sans-serif; }
+        .player-stage {
+            position: relative;
+            background: #000;
+            aspect-ratio: 16 / 9;
+            width: 100%;
+        }
+        .player-overlay {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(180deg, rgba(20,23,26,0.18) 0%, rgba(20,23,26,0.78) 100%);
+            transition: opacity 0.25s ease, visibility 0.25s ease; z-index: 20;
+        }
+        .player-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .overlay-play {
+            width: 78px; height: 78px; border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.25); background: rgba(239,68,68,0.92);
+            color: #fff; font-size: 1.8rem; box-shadow: 0 24px 50px rgba(0,0,0,0.35);
+            transition: all 0.2s ease; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .overlay-play:hover { transform: scale(1.08); background: rgba(220,38,38,0.98); }
+        .iklan-box {
+            background: #2c2e31;
+            border: 2px dashed #f97316;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 20px;
+            text-align: center;
+            color: #fbbf24;
+            font-weight: 600;
+        }
+        #vdoContainer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 10;
+        }
+        #vdoContainer iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* Quality Selector */
+        .quality-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a1d20;
+            border: 1px solid #2a2d32;
+            border-radius: 14px;
+            padding: 10px 14px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .quality-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #6b7280;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .quality-label i { font-size: 13px; color: #4b5563; }
+        .quality-divider {
+            width: 1px;
+            height: 20px;
+            background: #2a2d32;
+            flex-shrink: 0;
+        }
+        .quality-options {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .q-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 13px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #2e3238;
+            background: #23262b;
+            color: #9ca3af;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .q-btn:hover { background: #2c3038; color: #e5e7eb; border-color: #3d4249; }
+        .q-btn.active {
+            background: #1d2d3e;
+            border-color: #3b82f6;
+            color: #60a5fa;
+        }
+        .q-btn .q-badge {
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 4px;
+            background: rgba(250,204,21,0.15);
+            color: #facc15;
+            border: 1px solid rgba(250,204,21,0.25);
+            letter-spacing: 0.05em;
+        }
+        .q-btn.active .q-badge {
+            background: rgba(59,130,246,0.15);
+            color: #93c5fd;
+            border-color: rgba(59,130,246,0.3);
+        }
+        .q-active-info {
+            margin-left: auto;
+            font-size: 11px;
+            color: #4b5563;
+            white-space: nowrap;
+        }
+        .q-active-info span { color: #60a5fa; font-weight: 700; }
+
+        /* Troubleshooting Note */
+        .notice-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: #1e2328;
+            border: 1px solid #374151;
+            border-left: 4px solid #f59e0b;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-top: 16px;
+        }
+        .notice-icon {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            background: rgba(245,158,11,0.12);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f59e0b;
+            font-size: 1rem;
+            margin-top: 1px;
+        }
+        .notice-content { flex: 1; }
+        .notice-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #f59e0b;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .notice-text {
+            font-size: 13.5px;
+            color: #9ca3af;
+            line-height: 1.65;
+            margin: 0;
+        }
+        .notice-steps {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .notice-steps li {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 13.5px;
+            color: #d1d5db;
+            line-height: 1.5;
+        }
+        .step-badge {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(245,158,11,0.18);
+            color: #f59e0b;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1px;
+        }
+        .highlight-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(99,102,241,0.15);
+            border: 1px solid rgba(99,102,241,0.3);
+            color: #a5b4fc;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 1px 8px;
+            border-radius: 99px;
+        }
+
+        /* Social Media Buttons */
+        .sosmed-section { margin-top: 20px; }
+        .sosmed-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+        .sosmed-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .sosmed-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.18s ease;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        .sosmed-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .sosmed-btn:active { transform: translateY(0); }
+        .btn-tiktok { background: #111; border-color: #2d2d2d; color: #fff; }
+        .btn-tiktok .icon-wrap {
+            width: 22px; height: 22px; background: #fff; border-radius: 5px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-tiktok .tiktok-icon { width: 14px; height: 14px; }
+        .btn-twitter { background: #0f0f0f; border-color: #2d2d2d; color: #fff; }
+        .btn-twitter i { font-size: 15px; color: #fff; }
+        .btn-whatsapp { background: #0d1f14; border-color: #1a4d2a; color: #4ade80; }
+        .btn-whatsapp i { font-size: 16px; color: #25d366; }
+
+        /* ===== LIVE CHAT ===== */
+        .live-chat-wrap {
+            background: #1a1d20;
+            border: 1px solid #2a2d32;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .live-chat-iframe-wrap {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Permanent transparent overlay - blocks all interaction */
+        .live-chat-iframe-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            background: transparent;
+            cursor: default;
+        }
+        .live-chat-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: #111316;
+            border-bottom: 1px solid #2a2d32;
+            flex-shrink: 0;
+        }
+        .live-chat-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #ef4444;
+            box-shadow: 0 0 6px rgba(239,68,68,0.7);
+            animation: pulse-dot 1.5s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .live-chat-header span {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+        .live-chat-header span strong { color: #e5e7eb; }
+        .live-chat-iframe {
+            border: 0;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* Desktop: side-by-side layout */
+        @media (min-width: 769px) {
+            .content-with-chat {
+                display: grid;
+                grid-template-columns: 1fr 360px;
+                gap: 16px;
+                align-items: start;
+            }
+            .live-chat-wrap {
+                height: 100%;
+                min-height: 500px;
+                position: sticky;
+                top: 72px; /* below sticky header */
+            }
+            .live-chat-iframe {
+                height: 100%;
+                min-height: 460px;
+            }
+            /* Hide mobile chat */
+            .live-chat-mobile { display: none !important; }
+        }
+
+        /* Mobile: stacked layout */
+        @media (max-width: 768px) {
+            .content-with-chat {
+                display: block;
+            }
+            /* Hide desktop chat */
+            .live-chat-desktop { display: none !important; }
+            .live-chat-mobile .live-chat-wrap {
+                height: 420px;
+            }
+            .live-chat-mobile .live-chat-iframe {
+                height: 380px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#14171a] text-gray-300 flex flex-col min-h-screen">
+    <header class="bg-[#2c2e31] border-b border-gray-700 sticky top-0 z-30">
+        <div class="flex items-center justify-between gap-3 max-w-7xl mx-auto px-4 py-3">
+            <a href="#"><img src="https://www.idn.app/_next/static/media/logo_light.d99f40cc.svg" alt="IDN Live" class="h-9"></a>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto w-full p-4">
+
+        <!-- Desktop: player + chat side by side | Mobile: player full width -->
+        <div class="content-with-chat">
+
+            <div class="left-col">
+                <div class="player-shell rounded-[28px] overflow-hidden border border-gray-800 shadow-2xl">
+                    <div class="player-stage" id="playerStage">
+                        <div id="vdoContainer"></div>
+                        <div id="playerOverlay" class="player-overlay">
+                            <button id="overlayPlayButton" class="overlay-play">
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quality-bar">
+                    <span class="quality-label">
+                        <i class="fa-solid fa-film"></i>
+                        Kualitas
+                    </span>
+                    <div class="quality-divider"></div>
+                    <div class="quality-options">
+                        <button class="q-btn active" data-src="https://mega.nz/embed/bpIgxY6Y#z7iXnQqKtEhuJENfhcxzPYq6JhnVHOhaBuZqU7wdPXs" data-label="720p">
+                            <i class="fa-solid fa-circle-play" style="font-size:11px;"></i>
+                            720p
+                        </button>
+                        <button class="q-btn" data-src="https://mega.nz/embed/bpIgxY6Y#z7iXnQqKtEhuJENfhcxzPYq6JhnVHOhaBuZqU7wdPXs" data-label="1080p HD">
+                            <i class="fa-solid fa-circle-play" style="font-size:11px;"></i>
+                            1080p
+                            <span class="q-badge">HD</span>
+                        </button>
+                    </div>
+                    <div class="q-active-info">Aktif: <span id="activeQLabel">720p</span></div>
+                </div>
+
+                <div class="mt-5 px-1">
+                    <p class="uppercase tracking-[0.3em] text-[11px] text-red-400 font-bold">REPLAY READY</p>
+                    <h1 class="text-white text-3xl font-bold">JKT48 Request Hour 2026 SHOW 1 - 13 Juni 2026</h1>
+                    <p class="text-gray-400 text-sm"></p>
+                </div>
+
+                <div class="sosmed-section px-1">
+                    <p class="sosmed-label">Ikuti kami di</p>
+                    <div class="sosmed-grid">
+                        <a href="https://www.tiktok.com/@arenareplay48" target="_blank" class="sosmed-btn btn-tiktok">
+                            <span class="icon-wrap">
+                                <svg class="tiktok-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.72a8.18 8.18 0 0 0 4.78 1.52V6.79a4.85 4.85 0 0 1-1.01-.1z" fill="#000"/>
+                                </svg>
+                            </span>
+                            TikTok
+                        </a>
+                        <a href="https://x.com/48replay" target="_blank" class="sosmed-btn btn-twitter">
+                            <i class="fa-brands fa-x-twitter"></i>
+                            X / Twitter
+                        </a>
+                        <a href="https://whatsapp.com/channel/0029VbCuSeJBadmQxnmZE20u" target="_blank" class="sosmed-btn btn-whatsapp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                            Saluran WhatsApp
+                        </a>
+                    </div>
+                </div>
+
+                <div class="notice-box">
+                    <div class="notice-icon">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="notice-content">
+                        <div class="notice-title"><i class="fa-solid fa-circle-info" style="margin-right:5px;"></i>Video terkena limit?</div>
+                        <p class="notice-text">Jika video tidak bisa diputar atau muncul pesan <em>"Transfer quota exceeded/Kuota transfer telah terlewati"</em>, ikuti langkah berikut:</p>
+                        <ul class="notice-steps">
+                            <li>
+                                <span class="step-badge">1</span>
+                                <span>Hapus data browser — buka <strong style="color:#e5e7eb;">Pengaturan &rarr; Privasi &rarr; Hapus Data Browsing</strong>, centang <em>Cache</em> &amp; <em>Cookie</em>, lalu hapus.</span>
+                            </li>
+                            <li>
+                                <span class="step-badge">2</span>
+                                <span>
+                                    Reset IP menggunakan
+                                    <span class="highlight-chip"><i class="fa-solid fa-shield-halved"></i>&nbsp;WARP+ 1.1.1.1</span>
+                                    — aktifkan aplikasi Cloudflare 1.1.1.1, matikan lalu nyalakan kembali untuk mendapatkan IP baru.
+                                </span>
+                            </li>
+                            <li>
+                                <span class="step-badge">3</span>
+                                <span>Muat ulang halaman ini dan coba putar kembali.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="live-chat-mobile" style="margin-top:16px;">
+                    <div class="live-chat-wrap">
+                        <div class="live-chat-header">
+                            <span class="live-chat-dot"></span>
+                            <span><strong>Pengumuman</strong> &nbsp;·&nbsp; Arena Replay</span>
+                            <span style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.08em;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#f87171;padding:2px 8px;border-radius:99px;">READ ONLY</span>
+                        </div>
+                        <div class="live-chat-iframe-wrap">
+                            <iframe
+                                class="live-chat-iframe"
+                                src="https://www.youtube.com/live_chat?v=sY5SnRaAErw&embed_domain=arenareplay.my.id&dark_theme=1"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                            ></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="iklan-box">
+                    <a href="https://arenareplay.my.id/" target="_blank">
+                        <img src="https://i.ibb.co/xSGYwHfv/pasang-iklan-mu-disini-1.png" alt="PASANG IKLAN DISINI" class="w-full h-auto rounded-md">
+                    </a>
+                </div>
+            </div>
+            <!-- END LEFT COLUMN -->
+
+            <!-- RIGHT COLUMN: Live Chat DESKTOP -->
+            <div class="live-chat-desktop">
+                <div class="live-chat-wrap">
+                    <div class="live-chat-header">
+                        <span class="live-chat-dot"></span>
+                        <span><strong>Pengumuman</strong> &nbsp;·&nbsp; Arena Replay</span>
+                        <span style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.08em;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#f87171;padding:2px 8px;border-radius:99px;">READ ONLY</span>
+                    </div>
+                    <div class="live-chat-iframe-wrap">
+                        <iframe
+                            class="live-chat-iframe"
+                            src="https://www.youtube.com/live_chat?v=sY5SnRaAErw&embed_domain=arenareplay.my.id&dark_theme=1"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                        ></iframe>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+    </main>
+
+    <script>
+    var sources = {
+        "720p": "https://mega.nz/embed/bpIgxY6Y#z7iXnQqKtEhuJENfhcxzPYq6JhnVHOhaBuZqU7wdPXs",
+        "1080p HD": "https://mega.nz/embed/bpIgxY6Y#z7iXnQqKtEhuJENfhcxzPYq6JhnVHOhaBuZqU7wdPXs"
+    };
+    var activeQuality = "720p";
+
+    var links = [
+        "https://s.shopee.co.id/6AiPo8KrYT",
+        "https://s.shopee.co.id/6L1q0RKEDW",
+        "https://s.shopee.co.id/6VLGCkJasZ",
+        "https://s.shopee.co.id/9KfRZx8o88",
+        "https://s.shopee.co.id/9UyrmG8AnB"
+    ];
+    var delay = 60000;
+
+    var excludedSelectors = [
+        '#vdoContainer',
+        '#vdoContainer iframe',
+        '#overlayPlayButton',
+        '.q-btn',
+        '.quality-bar',
+        '.live-chat-wrap',
+        '.live-chat-iframe'
+    ];
+
+    function bukaIklan() {
+        var lastOpen = localStorage.getItem("lastAdOpen");
+        var now = Date.now();
+        if (!lastOpen || (now - parseInt(lastOpen)) > delay) {
+            var randomLink = links[Math.floor(Math.random() * links.length)];
+            window.open(randomLink, "_blank");
+            localStorage.setItem("lastAdOpen", now);
+        }
+    }
+
+    localStorage.removeItem("lastAdOpen");
+
+    document.addEventListener("click", function(e) {
+        var isExcluded = excludedSelectors.some(function(sel) {
+            return e.target.closest(sel) !== null;
+        });
+        if (isExcluded) return;
+        bukaIklan();
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var overlayBtn = document.getElementById("overlayPlayButton");
+        var playerOverlay = document.getElementById("playerOverlay");
+        var vdoContainer = document.getElementById("vdoContainer");
+        var activeQLabel = document.getElementById("activeQLabel");
+        var playerActive = false;
+
+        document.querySelectorAll(".q-btn").forEach(function(btn) {
+            btn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                var label = btn.getAttribute("data-label");
+                var src = btn.getAttribute("data-src");
+                activeQuality = label;
+
+                document.querySelectorAll(".q-btn").forEach(function(b) { b.classList.remove("active"); });
+                btn.classList.add("active");
+                activeQLabel.textContent = label;
+
+                if (playerActive) {
+                    var iframe = document.createElement("iframe");
+                    iframe.src = src;
+                    iframe.allow = "autoplay; fullscreen";
+                    iframe.setAttribute("allowfullscreen", "true");
+                    iframe.style.cssText = "width:100%;height:100%;border:0;";
+                    vdoContainer.innerHTML = "";
+                    vdoContainer.appendChild(iframe);
+                }
+            });
+        });
+
+        overlayBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            bukaIklan();
+
+            var src = sources[activeQuality] || sources["720p"];
+            var iframe = document.createElement("iframe");
+            iframe.src = src;
+            iframe.allow = "autoplay; fullscreen";
+            iframe.setAttribute("allowfullscreen", "true");
+            iframe.style.cssText = "width:100%;height:100%;border:0;";
+
+            vdoContainer.innerHTML = "";
+            vdoContainer.appendChild(iframe);
+            vdoContainer.style.display = "block";
+            playerActive = true;
+
+            playerOverlay.style.opacity = "0";
+            playerOverlay.style.visibility = "hidden";
+            playerOverlay.style.pointerEvents = "none";
+            setTimeout(function() { playerOverlay.remove(); }, 300);
+        });
+
+        function onFullscreenChange() {
+            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (inFs) bukaIklan();
+        }
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+        document.addEventListener("mozfullscreenchange", onFullscreenChange);
+    });
+
+    if (!(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
+        let devToolsOpen = false;
+        function detectDevTools() {
+            const widthDiff = window.outerWidth - window.innerWidth;
+            const heightDiff = window.outerHeight - window.innerHeight;
+            if ((widthDiff > 160 || heightDiff > 160) && !devToolsOpen) {
+                devToolsOpen = true;
+                document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:white;font-family:system-ui;text-align:center;padding:20px;"><div><h1 style="font-size:2rem;margin-bottom:1rem;">🚫 Mau ngapain?</h1><p>Developer tools terdeteksi.</p></div></div>`;
+                setTimeout(() => window.location.href = 'https://www.youtube.com/watch?v=4ckrU8qqblY', 800);
+            }
+        }
+        function blockDevToolsKeys(e) {
+            const blocked = [
+                e.key === 'F12' || e.keyCode === 123,
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
+                (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')),
+                (e.ctrlKey && e.key === 'U') || (e.metaKey && e.key === 'U')
+            ];
+            if (blocked.some(Boolean)) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        }
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        // Prevent right-click on live chat overlay
+        document.querySelectorAll('.live-chat-wrap, .live-chat-iframe-wrap').forEach(function(el) {
+            el.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+        });
+        document.addEventListener('keydown', blockDevToolsKeys, true);
+        window.addEventListener('keydown', blockDevToolsKeys, true);
+        setInterval(detectDevTools, 500);
+    }
+    </script>
+</body>
+</html>
